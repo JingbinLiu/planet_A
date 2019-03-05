@@ -4,5 +4,34 @@
 
 ./logcarla1  64*64*3;    5 bits   action_repeat 2;
 ./logcarla2  64*64*3;    8 bits   action_repeat 2;
-./logcarla3  128*128*3;  8 bits   action_repeat 3;
+
 ./logcarla4  128*128*3;  8 bits;  action_repeat 2;
+
+encoder:
+  hidden = tf.layers.conv2d(hidden, 8, 4, **kwargs) #####
+  hidden = tf.layers.conv2d(hidden, 16, 4, **kwargs)
+  hidden = tf.layers.conv2d(hidden, 50, 4, **kwargs)
+  hidden = tf.layers.conv2d(hidden, 100, 4, **kwargs)
+  hidden = tf.layers.conv2d(hidden, 256, 4, **kwargs)
+
+decoder:
+  hidden = tf.layers.conv2d_transpose(hidden, 256, 5, **kwargs) #####
+  hidden = tf.layers.conv2d_transpose(hidden, 100, 5, **kwargs)
+  hidden = tf.layers.conv2d_transpose(hidden, 50, 5, **kwargs)
+  hidden = tf.layers.conv2d_transpose(hidden, 16, 6, **kwargs)
+  hidden = tf.layers.conv2d_transpose(hidden, 3, 6, strides=2)
+
+
+
+./logcarla3  128*128*3;  8 bits   action_repeat 3;
+encoder:
+  hidden = tf.layers.conv2d(hidden, 32, 4, **kwargs3)
+  hidden = tf.layers.conv2d(hidden, 64, 4, **kwargs)
+  hidden = tf.layers.conv2d(hidden, 128, 4, **kwargs3)
+  hidden = tf.layers.conv2d(hidden, 256, 4, **kwargs)
+
+decoder:
+  hidden = tf.layers.conv2d_transpose(hidden, 128, 6, **kwargs)
+  hidden = tf.layers.conv2d_transpose(hidden, 64, 5, **kwargs3)
+  hidden = tf.layers.conv2d_transpose(hidden, 32, 5, **kwargs3)
+  hidden = tf.layers.conv2d_transpose(hidden, 3, 6, strides=2)
