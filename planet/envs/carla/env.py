@@ -25,7 +25,8 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
-from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
+
+from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
 # Set this where you want to save image outputs (or empty string to disable)
 CARLA_OUT_PATH = os.environ.get("CARLA_OUT", os.path.expanduser("~/carla_out"))
@@ -34,17 +35,17 @@ if CARLA_OUT_PATH and not os.path.exists(CARLA_OUT_PATH):
 
 # Set this to the path of your Carla binary
 SERVER_BINARY = os.environ.get("CARLA_SERVER",
-                               os.path.expanduser("/home/kychen/projects/carla/CarlaUE4.sh"))
+                               os.path.expanduser("/home/kychen/projects/carla/CarlaUE4.sh"))  # /data/carla/CarlaUE4.sh
 
 assert os.path.exists(SERVER_BINARY)
 if "CARLA_PY_PATH" in os.environ:
     sys.path.append(os.path.expanduser(os.environ["CARLA_PY_PATH"]))
 else:
     # TODO(ekl) switch this to the binary path once the planner is in master
-    sys.path.append(os.path.expanduser("/home/kychen/projects/carla/PythonClient/"))
+    sys.path.append(os.path.expanduser("/home/kychen/projects/carla/PythonClient/"))  # /data/carla/PythonClient/
 
 try:
-    from carla.client import CarlaClient
+    from carla.client import CarlaClient, VehicleControl
     from carla.sensor import Camera
     from carla.settings import CarlaSettings
     from carla.planner.planner import Planner, REACH_GOAL, GO_STRAIGHT, \
@@ -87,12 +88,12 @@ ENV_CONFIG = {
     "framestack": 1,  # note: only [1, 2] currently supported
     "early_terminate_on_collision": True,
     "reward_function": "custom2",
-    "render_x_res": 800,
-    "render_y_res": 600,
-    "x_res": 64,  # cv2.resize()
-    "y_res": 64,  # cv2.resize()
+    "render_x_res": 400, #800,
+    "render_y_res": 175, #600,
+    "x_res": 64,  #128, # cv2.resize()
+    "y_res": 64,  #128, # cv2.resize()
     "server_map": "/Game/Maps/Town02",
-    "scenarios": TOWN2_ONE_CURVE_0, # TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, # TOWN2_ONE_CURVE_0, # [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
+    "scenarios": TOWN2_ONE_CURVE_0, #TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
     "use_depth_camera": False,  # use depth instead of rgb.
     "discrete_actions": False,
     "squash_action_logits": False,
@@ -271,6 +272,7 @@ class CarlaEnv(gym.Env):
             camera1.set_image_size(self.config["render_x_res"],
                                    self.config["render_y_res"])
             # camera1.set_position(30, 0, 130)
+            camera1.set(FOV=120)
             camera1.set_position(2.0, 0.0, 1.4)
             camera1.set_rotation(0.0, 0.0, 0.0)
 
@@ -281,6 +283,7 @@ class CarlaEnv(gym.Env):
                                self.config["render_y_res"])
         # camera2.set_position(30, 0, 130)
         # camera2.set_position(0.3, 0.0, 1.3)
+        camera2.set(FOV=120)
         camera2.set_position(2.0, 0.0, 1.4)
         camera2.set_rotation(0.0, 0.0, 0.0)
 
@@ -306,6 +309,19 @@ class CarlaEnv(gym.Env):
         # to start the episode.
         print("Starting new episode...")
         self.client.start_episode(self.scenario["start_pos_id"])
+
+        # remove the vehicle dropping when starting a new episode.
+        cnt = 1; z1 = 0
+        zero_control = VehicleControl()
+        while ( cnt < 3 ):
+            self.client.send_control(zero_control)   # VehicleControl().steer = 0, VehicleControl().throttle = 0, VehicleControl().reverse = False
+            z0=z1
+            z1 = self.client.read_data()[0].player_measurements.transform.location.z
+            print(z1)
+            if z0 - z1 == 0:
+                cnt += 1
+        print('Starting new episode done.\n')
+
 
         # Process observations: self._read_observation() returns image and py_measurements.
         image, py_measurements = self._read_observation()
