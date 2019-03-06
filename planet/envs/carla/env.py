@@ -25,6 +25,7 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
+
 from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
 # Set this where you want to save image outputs (or empty string to disable)
@@ -44,7 +45,7 @@ else:
     sys.path.append(os.path.expanduser("/home/kychen/projects/carla/PythonClient/"))  # /data/carla/PythonClient/
 
 try:
-    from carla.client import CarlaClient
+    from carla.client import CarlaClient, VehicleControl
     from carla.sensor import Camera
     from carla.settings import CarlaSettings
     from carla.planner.planner import Planner, REACH_GOAL, GO_STRAIGHT, \
@@ -308,6 +309,19 @@ class CarlaEnv(gym.Env):
         # to start the episode.
         print("Starting new episode...")
         self.client.start_episode(self.scenario["start_pos_id"])
+
+        # remove the vehicle dropping when starting a new episode.
+        cnt = 1; z1 = 0
+        zero_control = VehicleControl()
+        while ( cnt < 3 ):
+            self.client.send_control(zero_control)   # VehicleControl().steer = 0, VehicleControl().throttle = 0, VehicleControl().reverse = False
+            z0=z1
+            z1 = self.client.read_data()[0].player_measurements.transform.location.z
+            print(z1)
+            if z0 - z1 == 0:
+                cnt += 1
+        print('Starting new episode done.\n')
+
 
         # Process observations: self._read_observation() returns image and py_measurements.
         image, py_measurements = self._read_observation()
