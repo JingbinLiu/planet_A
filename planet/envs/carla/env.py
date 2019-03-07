@@ -93,7 +93,7 @@ ENV_CONFIG = {
     "x_res": 128, #64,  # cv2.resize()
     "y_res": 128, #64,  # cv2.resize()
     "server_map": "/Game/Maps/Town02",
-    "scenarios": TOWN2_ONE_CURVE_0, #TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
+    "scenarios": TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_ONE_CURVE_0, #TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
     "use_depth_camera": False,  # use depth instead of rgb.
     "discrete_actions": False,
     "squash_action_logits": False,
@@ -706,6 +706,41 @@ def compute_reward_custom2(env, prev, current):
     # Opposite lane intersection
     reward -= 4 * current["intersection_otherlane"]  # [0 ~ 1]
 
+
+    return reward
+
+
+
+def compute_reward_custom3(env, prev, current):
+    reward = 0.0
+
+    # cur_dist = current["distance_to_goal"]
+    # prev_dist = prev["distance_to_goal"]
+    #
+    # if env.config["verbose"]:
+    #     print("Cur dist {}, prev dist {}".format(cur_dist, prev_dist))
+    #
+    # # Distance travelled toward the goal in m
+    # reward += 0.5 * np.clip(prev_dist - cur_dist, -12.0, 12.0)
+
+    # Speed reward, up 30.0 (km/h)
+    reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
+
+    # New collision damage
+    new_damage = (
+        current["collision_vehicles"] + current["collision_pedestrians"] +
+        current["collision_other"] - prev["collision_vehicles"] -
+        prev["collision_pedestrians"] - prev["collision_other"])
+    # print(current["collision_other"], current["collision_vehicles"], current["collision_pedestrians"])
+    # 0.0 41168.109375 0.0
+    if new_damage:
+        reward -= 300.0
+
+    # Sidewalk intersection [0, 1]
+    reward -= 5 * (current["forward_speed"]+1.0) * current["intersection_offroad"]
+    # print(current["intersection_offroad"])
+    # Opposite lane intersection
+    reward -= 2 * (current["forward_speed"]+1.0) * current["intersection_otherlane"]  # [0 ~ 1]
 
     return reward
 
