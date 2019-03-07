@@ -203,6 +203,7 @@ class DeepMindWrapper_carla(object):
   def step(self, action):
     self.img, reward, done, info = self._env.step(action)
     obs = {'state':np.array([0.0])}
+    print('reward: ',reward,'   done:',done)
     return obs, reward, done, {}
 
   def reset(self):
