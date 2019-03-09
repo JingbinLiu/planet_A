@@ -90,8 +90,8 @@ ENV_CONFIG = {
     "reward_function": "custom2",
     "render_x_res": 400, #800,
     "render_y_res": 175, #600,
-    "x_res": 128, #64,  # cv2.resize()
-    "y_res": 128, #64,  # cv2.resize()
+    "x_res": 32, #64,  # cv2.resize()
+    "y_res": 32, #64,  # cv2.resize()
     "server_map": "/Game/Maps/Town02",
     "scenarios": TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_ONE_CURVE_0, #TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
     "use_depth_camera": False,  # use depth instead of rgb.

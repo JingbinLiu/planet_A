@@ -65,3 +65,21 @@ class Run(object):
                             if self._is_every_steps(phase_step, phase.batch_size, phase.report_every):
                                 tf.logging.info('Score {}.'.format(mean_score))
                                 yield mean_score
+
+
+
+
+env.py
+ENV_CONFIG = {
+    ...
+    "x_res": 128, #64,  # cv2.resize()
+    "y_res": 128, #64,  # cv2.resize()
+    ...
+    }
+
+tasks.py
+def _dm_control_env_carla(action_repeat, max_length, env_name):
+(128, 128)
+
+conv_ha.py
+assert mean.shape[1:].as_list() == [128, 128, 3], mean.shape
