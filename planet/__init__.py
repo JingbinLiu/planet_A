@@ -15,3 +15,20 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
+
+
+# ================ for testing =================
+
+# IMG_SIZE = (32, 32)
+# BATCHSIZE = 50
+# LOGDIR = './log_32_8bit_40batch_a'
+
+#
+# IMG_SIZE = (64, 64)
+# BATCHSIZE = 50
+# LOGDIR = './log_64_8bits_carla_a'
+
+IMG_SIZE = (128, 128)
+BATCHSIZE = 40
+LOGDIR = './log_128_8bit_40batch_a'

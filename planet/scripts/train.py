@@ -55,6 +55,7 @@ from planet import tools
 from planet import training
 from planet.scripts import configs
 
+from planet import LOGDIR
 
 def start(logdir, args):
   with args.params.unlocked:
@@ -112,7 +113,7 @@ if __name__ == '__main__':
   boolean = lambda x: bool(['False', 'True'].index(x))
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--logdir', default='./log_32_8bit_40batch_a')
+      '--logdir', default=LOGDIR)
   parser.add_argument(
       '--num_runs', type=int, default=1)
   parser.add_argument(

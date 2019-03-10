@@ -133,8 +133,9 @@ atexit.register(cleanup)
 
 
 class CarlaEnv(gym.Env):
-    def __init__(self, config=ENV_CONFIG):
+    def __init__(self, config=ENV_CONFIG, img_size = (64,64)):
         self.config = config
+        self.config["x_res"], self.config["y_res"] = img_size
         self.city = self.config["server_map"].split("/")[-1]
         if self.config["enable_planner"]:
             self.planner = Planner(self.city)
@@ -196,7 +197,7 @@ class CarlaEnv(gym.Env):
         self.server_process = subprocess.Popen(
             [
                 SERVER_BINARY, self.config["server_map"], "-windowed",
-                "-ResX=400", "-ResY=300", "-carla-server", "-benchmark -fps=10",   # "-benchmark -fps=10": to run the simulation at a fixed time-step of 0.1 seconds
+                "-ResX=480", "-ResY=360", "-carla-server", "-benchmark -fps=10",   # "-benchmark -fps=10": to run the simulation at a fixed time-step of 0.1 seconds
                 "-carla-world-port={}".format(self.server_port)
             ],
             preexec_fn=os.setsid,
@@ -349,10 +350,24 @@ class CarlaEnv(gym.Env):
             obs = self._step(action)
             return obs
         except Exception:
-            print("Error during step, terminating episode early",
-                  traceback.format_exc())
-            self.clear_server_state()
-            return (self.last_obs, 0.0, True, {})
+            try:
+                print('Step error, trying again...')
+                obs = self._step(action)
+                return obs
+            except Exception:
+                print("Error during step, terminating episode early",
+                      traceback.format_exc())
+                self.clear_server_state()
+                return (self.last_obs, 0.0, True, {})
+
+        # try:
+        #     obs = self._step(action)
+        #     return obs
+        # except Exception:
+        #     print("Error during step, terminating episode early",
+        #           traceback.format_exc())
+        #     self.clear_server_state()
+        #     return (self.last_obs, 0.0, True, {})
 
     def _step(self, action):
         if self.config["discrete_actions"]:
