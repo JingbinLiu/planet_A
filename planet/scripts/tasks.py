@@ -28,7 +28,7 @@ from planet import control
 from planet import networks
 from planet import tools
 
-from planet import IMG_SIZE
+from planet import IMG_SIZE, REPEATE
 
 Task = collections.namedtuple(
     'Task', 'name, env_ctor, max_length, state_components')
@@ -177,7 +177,7 @@ def _dm_control_env_gym(action_repeat, max_length, env_name):
 
 
 def carla(config, params):
-  action_repeat = params.get('action_repeat', 2)
+  action_repeat = params.get('action_repeat', REPEATE)   # dict: D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.
   print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
   max_length = 100 // action_repeat
   state_components = [

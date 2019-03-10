@@ -25,6 +25,7 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
+from planet import REWARD_FUNC
 
 from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
@@ -87,7 +88,7 @@ ENV_CONFIG = {
     "enable_planner": False,
     "framestack": 1,  # note: only [1, 2] currently supported
     "early_terminate_on_collision": True,
-    "reward_function": "custom2",
+    "reward_function": REWARD_FUNC,
     "render_x_res": 400, #800,
     "render_y_res": 175, #600,
     "x_res": 32, #64,  # cv2.resize()
@@ -739,8 +740,8 @@ def compute_reward_custom3(env, prev, current):
     # reward += 0.5 * np.clip(prev_dist - cur_dist, -12.0, 12.0)
 
     # Speed reward, up 30.0 (km/h)
-    reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
-
+    # reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
+    reward += np.clip(current["forward_speed"]*3.6, 0.0, 30.0) / 10  # 3.6km/h = 1m/s
     # New collision damage
     new_damage = (
         current["collision_vehicles"] + current["collision_pedestrians"] +
@@ -822,6 +823,7 @@ REWARD_FUNCTIONS = {
     "custom": compute_reward_custom,
     "custom1": compute_reward_custom1,
     "custom2": compute_reward_custom2,
+    "custom3": compute_reward_custom3,
     "custom_depth": compute_reward_custom_depth,
     "lane_keep": compute_reward_lane_keep,
 }

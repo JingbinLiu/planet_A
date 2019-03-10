@@ -18,7 +18,7 @@ from __future__ import print_function
 
 
 
-# ================ for testing =================
+# ================ schemes =================
 
 # IMG_SIZE = (32, 32)
 # BATCHSIZE = 50
@@ -29,6 +29,12 @@ from __future__ import print_function
 # BATCHSIZE = 50
 # LOGDIR = './log_64_8bits_carla_a'
 
-IMG_SIZE = (128, 128)
-BATCHSIZE = 40
-LOGDIR = './log_128_8bit_40batch_a'
+# IMG_SIZE = (128, 128)
+# BATCHSIZE = 40
+# LOGDIR = './log_128_8bit_40batch_a'
+
+IMG_SIZE = (64, 64)
+REPEATE = 1
+BATCHSIZE = 50
+REWARD_FUNC = 'custom3'
+LOGDIR = './log_64_8bit_50_1_a'
