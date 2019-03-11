@@ -21,16 +21,22 @@ from __future__ import print_function
 # ================ schemes =================
 
 # IMG_SIZE = (32, 32)
+# REPEATE = 2
 # BATCHSIZE = 50
+# REWARD_FUNC = 'custom2'
 # LOGDIR = './log_32_8bit_40batch_a'
 
 #
 # IMG_SIZE = (64, 64)
+# REPEATE = 2
 # BATCHSIZE = 50
+# REWARD_FUNC = 'custom2'
 # LOGDIR = './log_64_8bits_carla_a'
 
 # IMG_SIZE = (128, 128)
+# REPEATE = 2
 # BATCHSIZE = 40
+# REWARD_FUNC = 'custom2'
 # LOGDIR = './log_128_8bit_40batch_a'
 
 IMG_SIZE = (64, 64)
