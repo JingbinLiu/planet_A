@@ -225,9 +225,9 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
   assert env_name == 'carla'
   from planet.envs.carla.env import CarlaEnv
   def env_ctor():
-    env = CarlaEnv(img_size=img_size)
+    env = CarlaEnv()
     env = DeepMindWrapper_carla(env, img_size)
-    env = control.wrappers.ActionRepeat(env, action_repeat)
+    env = control.wrappers.ActionRepeat(env, action_repeat)    # reward: sum the rewards of each action
     env = control.wrappers.LimitDuration(env, max_length)
     env = control.wrappers.PixelObservations(env, img_size, np.uint8, 'image')
     env = control.wrappers.ConvertTo32Bit(env)

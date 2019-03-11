@@ -277,16 +277,22 @@ class LimitDuration(object):
       raise RuntimeError('Must reset environment.')
     observ, reward, done, info = self._env.step(action)
     #print(done)
+    self.step_error = False
     self._step += 1
-    if self._step >= self._duration:
+    # print(self._step,self._duration, done)
+    if self._step >= self._duration:    # if step error occurs, self._step will be reset to 0, then self._step will always < self._duration and done is False.
       done = True
       self._step = None
+
     else:
-      assert not done
+      # assert not done
+      if done:
+        print('step error... please check the env.')
+        self.step_error = True
     return observ, reward, done, info
 
   def reset(self):
-    self._step = 0
+    self._step = 0        # if step error occurs, self._step will be reset to 0.
     return self._env.reset()
 
 
@@ -373,7 +379,7 @@ class CollectGymDataset(object):
 
   def reset(self, *args, **kwargs):
     if kwargs.get('blocking', True):
-      observ = self._env.reset(*args, **kwargs)
+      observ = self._env.reset(*args, **kwargs)       # carla: observ = {'state':..., 'image':array(...)}
       return self._process_reset(observ)
     else:
       future = self._env.reset(*args, **kwargs)
@@ -385,13 +391,17 @@ class CollectGymDataset(object):
     self._episode.append(self._transition)
     self._transition = {}
     if not done:
+      #print('updating.....................................')
       self._transition.update(self._process_observ(observ))
     else:
       episode = self._get_episode()
       info['episode'] = episode
-      if self._outdir:
+      if self.step_error:
+        print('step error... the episode will NOT be saved.')
+      elif self._outdir:
         filename = self._get_filename()
-        self._write(episode, filename)
+        #print('writing ......................................')
+        self._write(episode, filename)   #
     return observ, reward, done, info
 
   def _process_reset(self, observ):

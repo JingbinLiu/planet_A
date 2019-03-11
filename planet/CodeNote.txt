@@ -83,3 +83,29 @@ def _dm_control_env_carla(action_repeat, max_length, env_name):
 
 conv_ha.py
 assert mean.shape[1:].as_list() == [128, 128, 3], mean.shape
+
+
+# planet/control/simulate.py
+def collect_rollouts():
+    ...
+    def simulate_fn():
+        ...
+    done, score, image, action, reward = tf.scan( simulate_fn, tf.range(duration),initializer, parallel_iterations=1)
+
+
+
+# planet/scripts/tasks.py
+def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
+    env = control.wrappers.ExternalProcess(env_ctor)
+
+    # planet/control/wrappers.py
+    self._process.start()
+
+    # planet/control/wrappers.py
+    def _worker(self, constructor, conn):
+        result = getattr(env, name)(*args, **kwargs) # name = 'reset'
+
+        # planet/control/wrappers.py
+        class ConvertTo32Bit(object):
+            def reset(self):
+                observ = self._env.reset()

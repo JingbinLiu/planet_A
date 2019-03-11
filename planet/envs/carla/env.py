@@ -25,7 +25,7 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
-from planet import REWARD_FUNC
+from planet import REWARD_FUNC, IMG_SIZE
 
 from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
@@ -134,9 +134,9 @@ atexit.register(cleanup)
 
 
 class CarlaEnv(gym.Env):
-    def __init__(self, config=ENV_CONFIG, img_size = (64,64)):
+    def __init__(self, config=ENV_CONFIG):
         self.config = config
-        self.config["x_res"], self.config["y_res"] = img_size
+        self.config["x_res"], self.config["y_res"] = IMG_SIZE
         self.city = self.config["server_map"].split("/")[-1]
         if self.config["enable_planner"]:
             self.planner = Planner(self.city)
@@ -351,24 +351,10 @@ class CarlaEnv(gym.Env):
             obs = self._step(action)
             return obs
         except Exception:
-            try:
-                print('Step error, trying again...')
-                obs = self._step(action)
-                return obs
-            except Exception:
-                print("Error during step, terminating episode early",
-                      traceback.format_exc())
-                self.clear_server_state()
-                return (self.last_obs, 0.0, True, {})
-
-        # try:
-        #     obs = self._step(action)
-        #     return obs
-        # except Exception:
-        #     print("Error during step, terminating episode early",
-        #           traceback.format_exc())
-        #     self.clear_server_state()
-        #     return (self.last_obs, 0.0, True, {})
+            print("Error during step, terminating episode early",
+                  traceback.format_exc())
+            self.clear_server_state()
+            return (self.last_obs, 0.0, True, {})
 
     def _step(self, action):
         if self.config["discrete_actions"]:

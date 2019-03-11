@@ -44,3 +44,9 @@ REPEATE = 1
 BATCHSIZE = 50
 REWARD_FUNC = 'custom3'
 LOGDIR = './log_64_8bit_50_1_a'
+
+# IMG_SIZE = (64, 64)
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# LOGDIR = './log_test_a'
