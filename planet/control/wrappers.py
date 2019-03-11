@@ -34,6 +34,11 @@ import tensorflow as tf
 
 from planet.tools import nested
 
+from planet import USE_DEPTH
+
+num_channels_x = 1 if USE_DEPTH else 3
+
+
 
 class ObservationDict(object):
 
@@ -141,7 +146,7 @@ class PixelObservations(object):
   @property
   def observation_space(self):
     high = {np.uint8: 255, np.float: 1.0}[self._dtype]
-    image = gym.spaces.Box(0, high, self._size + (3,), dtype=self._dtype)
+    image = gym.spaces.Box(0, high, self._size + (num_channels_x,), dtype=self._dtype)
     spaces = self._env.observation_space.spaces.copy()
     assert self._key not in spaces
     spaces[self._key] = image

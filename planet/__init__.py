@@ -24,6 +24,7 @@ from __future__ import print_function
 # REPEATE = 2
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom2'
+# USE_DEPTH = False
 # LOGDIR = './log_32_8bit_40batch_a'
 
 #
@@ -31,22 +32,35 @@ from __future__ import print_function
 # REPEATE = 2
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom2'
+# USE_DEPTH = False
 # LOGDIR = './log_64_8bits_carla_a'
 
 # IMG_SIZE = (128, 128)
 # REPEATE = 2
 # BATCHSIZE = 40
 # REWARD_FUNC = 'custom2'
+# USE_DEPTH = False
 # LOGDIR = './log_128_8bit_40batch_a'
 
 IMG_SIZE = (64, 64)
 REPEATE = 1
 BATCHSIZE = 50
 REWARD_FUNC = 'custom3'
+USE_DEPTH = False
 LOGDIR = './log_64_8bit_50_1_a'
+
+
+# IMG_SIZE = (64, 64)
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom_depth'
+# USE_DEPTH = True
+# LOGDIR = './log_64_8bit_50_1_depth_a'
+
 
 # IMG_SIZE = (64, 64)
 # REPEATE = 1
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom3'
+# USE_DEPTH = False
 # LOGDIR = './log_test_a'

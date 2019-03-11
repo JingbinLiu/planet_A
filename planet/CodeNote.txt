@@ -99,13 +99,30 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
     env = control.wrappers.ExternalProcess(env_ctor)
 
     # planet/control/wrappers.py
-    self._process.start()
+    class ExternalProcess(object):
+        def __init__(self, constructor):
+            self._process = multiprocessing.Process(target=self._worker, args=(constructor, conn))
+            self._process.start()
 
-    # planet/control/wrappers.py
-    def _worker(self, constructor, conn):
-        result = getattr(env, name)(*args, **kwargs) # name = 'reset'
+            # planet/control/wrappers.py
+            def _worker(self, constructor, conn):
+                result = getattr(env, name)(*args, **kwargs)
 
-        # planet/control/wrappers.py
-        class ConvertTo32Bit(object):
-            def reset(self):
-                observ = self._env.reset()
+                # name = 'reset'
+                # planet/control/wrappers.py
+                class ConvertTo32Bit(object):
+                    def reset(self):
+                        observ = self._env.reset()
+
+                # name = 'observation_sapce'
+                # planet/control/wrappers.py
+                class ConvertTo32Bit(object):
+                    def __getattr__(self, name):
+                        return getattr(self._env, name)
+
+                        # planet/control/wrappers.py
+                        class PixelObservations(object):
+                            @property
+                            high = {np.uint8: 255, np.float: 1.0}[self._dtype]
+                            image = gym.spaces.Box(0, high, self._size + (3,), dtype=self._dtype)
+                            ...

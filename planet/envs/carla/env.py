@@ -25,7 +25,7 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
-from planet import REWARD_FUNC, IMG_SIZE
+from planet import REWARD_FUNC, IMG_SIZE,  USE_DEPTH
 
 from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
@@ -95,7 +95,7 @@ ENV_CONFIG = {
     "y_res": 32, #64,  # cv2.resize()
     "server_map": "/Game/Maps/Town02",
     "scenarios": TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_ONE_CURVE_0, #TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
-    "use_depth_camera": False,  # use depth instead of rgb.
+    "use_depth_camera": USE_DEPTH,  # use depth instead of rgb.
     "discrete_actions": False,
     "squash_action_logits": False,
 }
@@ -758,10 +758,7 @@ def compute_reward_custom_depth(env, prev, current):
     # # Distance travelled toward the goal in m
     # reward += 0.5 * np.clip(prev_dist - cur_dist, -12.0, 12.0)
 
-    # Speed reward, up 30.0 (km/h)
-    reward += current["forward_speed"]/ 10.0
-    if current["forward_speed"] > 40:
-        reward -= (current["forward_speed"] - 40)/10.0
+    reward += np.clip(current["forward_speed"] * 3.6, 0.0, 30.0) / 10  # 3.6km/h = 1m/s
     # New collision damage
     new_damage = (
         current["collision_vehicles"] + current["collision_pedestrians"] +
@@ -770,10 +767,10 @@ def compute_reward_custom_depth(env, prev, current):
     # print(current["collision_other"], current["collision_vehicles"], current["collision_pedestrians"])
     # 0.0 41168.109375 0.0
     if new_damage:
-        reward -= 100.0
+        reward -= 300.0
 
     # Sidewalk intersection [0, 1]
-    reward -= 10 * current["intersection_offroad"]
+    reward -= 5 * (current["forward_speed"] + 1.0) * current["intersection_offroad"]
     # print(current["intersection_offroad"])
     # Opposite lane intersection
     # reward -= 4 * current["intersection_otherlane"]  # [0 ~ 1]

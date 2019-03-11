@@ -18,6 +18,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 
+from planet import USE_DEPTH
+num_channels_x = 1 if USE_DEPTH else 3
+
 
 def image_strip_summary(name, images, max_length=100, max_batch=10):
   """Create an image summary that places frames of a video tensor side by side.
@@ -39,6 +42,6 @@ def image_strip_summary(name, images, max_length=100, max_batch=10):
     images = tf.to_float(images) / 255.0
   length, width = tf.shape(images)[1], tf.shape(images)[3]
   images = tf.transpose(images, [0, 2, 1, 3, 4])
-  images = tf.reshape(images, [1, -1, length * width, 3])
+  images = tf.reshape(images, [1, -1, length * width, num_channels_x])
   images = tf.clip_by_value(images, 0., 1.)
   return tf.summary.image(name, images)

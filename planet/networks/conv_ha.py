@@ -22,8 +22,9 @@ from tensorflow_probability import distributions as tfd
 
 from planet import tools
 
-from planet import IMG_SIZE
+from planet import IMG_SIZE, USE_DEPTH
 obs_size = IMG_SIZE
+num_channels_x = 1 if USE_DEPTH else 3
 
 def encoder(obs):
   """Extract deterministic features from an observation."""
@@ -69,29 +70,29 @@ def decoder(state, data_shape):
     hidden = tf.layers.conv2d_transpose(hidden, 128, 5, **kwargs1)
     hidden = tf.layers.conv2d_transpose(hidden, 64, 4, **kwargs)
     hidden = tf.layers.conv2d_transpose(hidden, 32, 4, **kwargs1)
-    hidden = tf.layers.conv2d_transpose(hidden, 3, 4, strides=2)
+    hidden = tf.layers.conv2d_transpose(hidden, num_channels_x, 4, strides=2)
 
   elif obs_size == (64,64):
     hidden = tf.layers.conv2d_transpose(hidden, 128, 5, **kwargs)
     hidden = tf.layers.conv2d_transpose(hidden, 64, 5, **kwargs)
     hidden = tf.layers.conv2d_transpose(hidden, 32, 6, **kwargs)
-    hidden = tf.layers.conv2d_transpose(hidden, 3, 6, strides=2)
+    hidden = tf.layers.conv2d_transpose(hidden, num_channels_x, 6, strides=2)
 
   elif obs_size == (128,128):
     hidden = tf.layers.conv2d_transpose(hidden, 128, 6, **kwargs)
     hidden = tf.layers.conv2d_transpose(hidden, 64, 5, **kwargs3)
     hidden = tf.layers.conv2d_transpose(hidden, 32, 5, **kwargs3)
-    hidden = tf.layers.conv2d_transpose(hidden, 3, 6, strides=2)
+    hidden = tf.layers.conv2d_transpose(hidden, num_channels_x, 6, strides=2)
 
 
   mean = hidden
 
   if obs_size == (32,32):
-    assert mean.shape[1:].as_list() == [32, 32, 3], mean.shape
+    assert mean.shape[1:].as_list() == [32, 32, num_channels_x], mean.shape
   elif obs_size == (64,64):
-    assert mean.shape[1:].as_list() == [64, 64, 3], mean.shape
+    assert mean.shape[1:].as_list() == [64, 64, num_channels_x], mean.shape
   elif obs_size == (128,128):
-    assert mean.shape[1:].as_list() == [128, 128, 3], mean.shape
+    assert mean.shape[1:].as_list() == [128, 128, num_channels_x], mean.shape
 
   mean = tf.reshape(mean, tools.shape(state)[:-1] + data_shape)
   dist = tools.MSEDistribution(mean)
