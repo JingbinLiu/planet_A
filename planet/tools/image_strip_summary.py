@@ -18,8 +18,8 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from planet import USE_DEPTH
-num_channels_x = 1 if USE_DEPTH else 3
+from planet import NUM_CHANNELS
+num_channels_x = NUM_CHANNELS
 
 
 def image_strip_summary(name, images, max_length=100, max_batch=10):

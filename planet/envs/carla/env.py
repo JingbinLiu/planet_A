@@ -25,7 +25,7 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
-from planet import REWARD_FUNC, IMG_SIZE,  USE_DEPTH
+from planet import REWARD_FUNC, IMG_SIZE,  USE_SENSOR
 
 from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
@@ -95,7 +95,7 @@ ENV_CONFIG = {
     "y_res": 32, #64,  # cv2.resize()
     "server_map": "/Game/Maps/Town02",
     "scenarios": TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_ONE_CURVE_0, #TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
-    "use_depth_camera": USE_DEPTH,  # use depth instead of rgb.
+    "use_sensor": USE_SENSOR,
     "discrete_actions": False,
     "squash_action_logits": False,
 }
@@ -147,14 +147,21 @@ class CarlaEnv(gym.Env):
         else:
             self.action_space = Box(-1.0, 1.0, shape=(2, ), dtype=np.float32)   # 2D action.
 
-        if config["use_depth_camera"]:
+        if config["use_sensor"] == 'use_semantic':
             image_space = Box(
-                -1.0,
-                1.0,
+                0.0,
+                255.0,
                 shape=(config["y_res"], config["x_res"],
                        1 * config["framestack"]),
                 dtype=np.float32)
-        else:
+        elif config["use_sensor"] == 'use_depth':
+            image_space = Box(
+                0.0,
+                255.0,
+                shape=(config["y_res"], config["x_res"],
+                       1 * config["framestack"]),
+                dtype=np.float32)
+        elif config["use_sensor"] == 'use_rgb':
             image_space = Box(
                 0,
                 255,
@@ -269,7 +276,20 @@ class CarlaEnv(gym.Env):
             WeatherId=self.weather)
         settings.randomize_seeds()
 
-        if self.config["use_depth_camera"]:
+
+        if self.config["use_sensor"] == 'use_semantic':
+            camera0 = Camera("CameraSemantic", PostProcessing="SemanticSegmentation")
+            camera0.set_image_size(self.config["render_x_res"],
+                                   self.config["render_y_res"])
+            # camera0.set_position(30, 0, 130)
+            camera0.set(FOV=120)
+            camera0.set_position(2.0, 0.0, 1.4)
+            camera0.set_rotation(0.0, 0.0, 0.0)
+
+            settings.add_sensor(camera0)
+
+
+        if self.config["use_sensor"] == 'use_depth':
             camera1 = Camera("CameraDepth", PostProcessing="Depth")
             camera1.set_image_size(self.config["render_x_res"],
                                    self.config["render_y_res"])
@@ -280,16 +300,19 @@ class CarlaEnv(gym.Env):
 
             settings.add_sensor(camera1)
 
-        camera2 = Camera("CameraRGB")
-        camera2.set_image_size(self.config["render_x_res"],
-                               self.config["render_y_res"])
-        # camera2.set_position(30, 0, 130)
-        # camera2.set_position(0.3, 0.0, 1.3)
-        camera2.set(FOV=120)
-        camera2.set_position(2.0, 0.0, 1.4)
-        camera2.set_rotation(0.0, 0.0, 0.0)
 
-        settings.add_sensor(camera2)
+        if self.config["use_sensor"] == 'use_rgb':
+            camera2 = Camera("CameraRGB")
+            camera2.set_image_size(self.config["render_x_res"],
+                                   self.config["render_y_res"])
+            # camera2.set_position(30, 0, 130)
+            # camera2.set_position(0.3, 0.0, 1.3)
+            camera2.set(FOV=120)
+            camera2.set_position(2.0, 0.0, 1.4)
+            camera2.set_rotation(0.0, 0.0, 0.0)
+
+            settings.add_sensor(camera2)
+
 
         # Setup start and end positions
         scene = self.client.load_settings(settings)
@@ -455,22 +478,34 @@ class CarlaEnv(gym.Env):
         subprocess.call(ffmpeg_cmd, shell=True)
 
     def preprocess_image(self, image):
-        if self.config["use_depth_camera"]:
-            assert self.config["use_depth_camera"]
-            data = (image.data - 0.5) * 2
+
+        if self.config["use_sensor"] == 'use_semantic':              # image.data: (0 ~ 12)
+            data = image.data * 21                                   # data: (0 ~ 255)
             data = data.reshape(self.config["render_y_res"],
                                 self.config["render_x_res"], 1)
             data = cv2.resize(
                 data, (self.config["x_res"], self.config["y_res"]),
                 interpolation=cv2.INTER_AREA)
-            data = np.expand_dims(data, 2)
-        else:
+            data = np.expand_dims(data, 2)                          # data: (0 ~ 255),  shape(y_res, x_res, 1)
+
+        elif self.config["use_sensor"] == 'use_depth':    # depth: (0 ~ 1)
+            # data = (image.data - 0.5) * 2
+            data = image.data * 255                                 # data: (0 ~ 255)
+            data = data.reshape(self.config["render_y_res"],
+                                self.config["render_x_res"], 1)     # shape(render_y_res,render_x_res,1)
+            data = cv2.resize(
+                data, (self.config["x_res"], self.config["y_res"]),
+                interpolation=cv2.INTER_AREA)                       # shape(y_res, x_res)
+            data = np.expand_dims(data, 2)                          # data: (0 ~ 255),  shape(y_res, x_res, 1)
+
+        elif self.config["use_sensor"] == 'use_rgb':
             data = image.data.reshape(self.config["render_y_res"],
                                       self.config["render_x_res"], 3)
             data = cv2.resize(
-                data, (self.config["x_res"], self.config["y_res"]),
+                data, (self.config["x_res"], self.config["y_res"]),        # data: (0 ~ 255),  shape(y_res, x_res, 3)
                 interpolation=cv2.INTER_AREA)
-            data = (data.astype(np.float32) - 128) / 128
+            # data = (data.astype(np.float32) - 128) / 128
+
         return data
 
     def _read_observation(self):
@@ -482,10 +517,16 @@ class CarlaEnv(gym.Env):
             print_measurements(measurements)
 
         observation = None
-        if self.config["use_depth_camera"]:
+
+        if self.config["use_sensor"] == 'use_semantic':
+            camera_name = "CameraSemantic"
+
+        elif self.config["use_sensor"] == 'use_depth':
             camera_name = "CameraDepth"
-        else:
+
+        elif self.config["use_sensor"] == 'use_rgb':
             camera_name = "CameraRGB"
+
         for name, image in sensor_data.items():
             if name == camera_name:
                 observation = image

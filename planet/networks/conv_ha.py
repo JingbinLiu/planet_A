@@ -22,9 +22,9 @@ from tensorflow_probability import distributions as tfd
 
 from planet import tools
 
-from planet import IMG_SIZE, USE_DEPTH
+from planet import IMG_SIZE, NUM_CHANNELS
 obs_size = IMG_SIZE
-num_channels_x = 1 if USE_DEPTH else 3
+num_channels_x = NUM_CHANNELS
 
 def encoder(obs):
   """Extract deterministic features from an observation."""

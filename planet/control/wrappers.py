@@ -34,9 +34,9 @@ import tensorflow as tf
 
 from planet.tools import nested
 
-from planet import USE_DEPTH
+from planet import NUM_CHANNELS
 
-num_channels_x = 1 if USE_DEPTH else 3
+num_channels_x = NUM_CHANNELS
 
 
 

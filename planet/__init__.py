@@ -42,25 +42,36 @@ from __future__ import print_function
 # USE_DEPTH = False
 # LOGDIR = './log_128_8bit_40batch_a'
 
-IMG_SIZE = (64, 64)
-REPEATE = 1
-BATCHSIZE = 50
-REWARD_FUNC = 'custom3'
-USE_DEPTH = False
-LOGDIR = './log_64_8bit_50_1_a'
+# IMG_SIZE = (64, 64)
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# LOGDIR = './log_64_8bit_50_1_rgb_I'
 
 
 # IMG_SIZE = (64, 64)
 # REPEATE = 1
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom_depth'
-# USE_DEPTH = True
-# LOGDIR = './log_64_8bit_50_1_depth_a'
+# USE_SENSOR = 'use_depth'
+# NUM_CHANNELS = 1
+# LOGDIR = './log_64_8bit_50_1_depth_I'
+
+IMG_SIZE = (64, 64)
+REPEATE = 1
+BATCHSIZE = 50
+REWARD_FUNC = 'custom3'
+USE_SENSOR = 'use_semantic'
+NUM_CHANNELS = 1
+LOGDIR = './log_64_8bit_50_1_semantic_I'
 
 
 # IMG_SIZE = (64, 64)
 # REPEATE = 1
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom3'
-# USE_DEPTH = False
+# USE_SENSOR = 'use_semantic'
+# NUM_CHANNELS = 1
 # LOGDIR = './log_test_a'
