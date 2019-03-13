@@ -28,7 +28,8 @@ from planet import control
 from planet import networks
 from planet import tools
 
-from planet import IMG_SIZE, REPEATE
+
+from planet import IMG_SIZE, EPISODE_LEN, REPEATE, USE_SENSOR
 
 Task = collections.namedtuple(
     'Task', 'name, env_ctor, max_length, state_components')
@@ -179,7 +180,7 @@ def _dm_control_env_gym(action_repeat, max_length, env_name):
 def carla(config, params):
   action_repeat = params.get('action_repeat', REPEATE)   # dict: D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.
   print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
-  max_length = 100 // action_repeat
+  max_length = EPISODE_LEN // action_repeat
   state_components = [
       'reward', 'state']
   img_size = IMG_SIZE
@@ -230,7 +231,8 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
     env = DeepMindWrapper_carla(env, img_size)
     env = control.wrappers.ActionRepeat(env, action_repeat)    # reward: sum the rewards of each action
     env = control.wrappers.LimitDuration(env, max_length)
-    env = control.wrappers.PixelObservations(env, img_size, np.uint8, 'image')
+    # PixelObservations: add image to obs for env.render()
+    env = control.wrappers.PixelObservations(env, img_size, np.float64 if USE_SENSOR=='use_depth' else np.uint8, 'image')
     env = control.wrappers.ConvertTo32Bit(env)
     return env
   env = control.wrappers.ExternalProcess(env_ctor)

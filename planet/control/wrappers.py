@@ -145,7 +145,7 @@ class PixelObservations(object):
 
   @property
   def observation_space(self):
-    high = {np.uint8: 255, np.float: 1.0}[self._dtype]
+    high = {np.uint8: 255, np.float: 1.0, np.float32: 255.0, np.float64: 255.0}[self._dtype]
     image = gym.spaces.Box(0, high, self._size + (num_channels_x,), dtype=self._dtype)
     spaces = self._env.observation_space.spaces.copy()
     assert self._key not in spaces
@@ -172,7 +172,9 @@ class PixelObservations(object):
       kwargs = dict(mode='edge', order=1, preserve_range=True)
       image = skimage.transform.resize(image, self._size, **kwargs)
     if self._dtype and image.dtype != self._dtype:
-      if image.dtype in (np.float32, np.float64) and self._dtype == np.uint8:
+      if image.dtype in (np.float32, np.float64) and self._dtype in (np.float32, np.float64):
+        image = image.astype(self._dtype)
+      elif image.dtype in (np.float32, np.float64) and self._dtype == np.uint8:
         image = (image * 255).astype(self._dtype)
       elif image.dtype == np.uint8 and self._dtype in (np.float32, np.float64):
         image = image.astype(self._dtype) / 255

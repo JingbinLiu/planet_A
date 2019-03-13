@@ -21,6 +21,7 @@ from __future__ import print_function
 # ================ schemes =================
 
 # IMG_SIZE = (32, 32)
+# EPISODE_LEN = 100
 # REPEATE = 2
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom2'
@@ -29,6 +30,7 @@ from __future__ import print_function
 
 #
 # IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
 # REPEATE = 2
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom2'
@@ -36,22 +38,25 @@ from __future__ import print_function
 # LOGDIR = './log_64_8bits_carla_a'
 
 # IMG_SIZE = (128, 128)
+# EPISODE_LEN = 100
 # REPEATE = 2
 # BATCHSIZE = 40
 # REWARD_FUNC = 'custom2'
 # USE_DEPTH = False
 # LOGDIR = './log_128_8bit_40batch_a'
 
-# IMG_SIZE = (64, 64)
-# REPEATE = 1
-# BATCHSIZE = 50
-# REWARD_FUNC = 'custom3'
-# USE_SENSOR = 'use_rgb'
-# NUM_CHANNELS = 3
-# LOGDIR = './log_64_8bit_50_1_rgb_I'
+IMG_SIZE = (64, 64)
+EPISODE_LEN = 120
+REPEATE = 1
+BATCHSIZE = 50
+REWARD_FUNC = 'custom3'
+USE_SENSOR = 'use_rgb'
+NUM_CHANNELS = 3
+LOGDIR = './log_64_8bit_50_1_rgb_I'
 
 
 # IMG_SIZE = (64, 64)
+# EPISODE_LEN = 120
 # REPEATE = 1
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom_depth'
@@ -59,16 +64,18 @@ from __future__ import print_function
 # NUM_CHANNELS = 1
 # LOGDIR = './log_64_8bit_50_1_depth_I'
 
-IMG_SIZE = (64, 64)
-REPEATE = 1
-BATCHSIZE = 50
-REWARD_FUNC = 'custom3'
-USE_SENSOR = 'use_semantic'
-NUM_CHANNELS = 1
-LOGDIR = './log_64_8bit_50_1_semantic_I'
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN = 120
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_semantic'
+# NUM_CHANNELS = 1
+# LOGDIR = './log_64_8bit_50_1_semantic_I'
 
 
 # IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
 # REPEATE = 1
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom3'

@@ -47,8 +47,9 @@ class Run(object):
 
             # planet/training/utility.py
             def train(model_fn, datasets, logdir, config):
-                trainer = trainer_.Trainer(logdir, config=config)
-                score, summary = model_fn(data, trainer, config)     #  model_fn is training.define_model.
+                trainer = trainer_.Trainer(logdir, config=config)        #  trainer_ is trainer.py
+                data = get_batch(datasets, trainer.phase, trainer.reset)
+                score, summary = model_fn(data, trainer, config)         #  model_fn is training.define_model.
                 trainer.add_phase(...)
                 trainer.add_phase(...)
                 for score in trainer.iterate(config.max_steps):
