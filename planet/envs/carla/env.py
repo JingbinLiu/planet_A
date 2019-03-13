@@ -36,14 +36,14 @@ if CARLA_OUT_PATH and not os.path.exists(CARLA_OUT_PATH):
 
 # Set this to the path of your Carla binary
 SERVER_BINARY = os.environ.get("CARLA_SERVER",
-                               os.path.expanduser("/home/kychen/projects/carla/CarlaUE4.sh"))  # /data/carla/CarlaUE4.sh
+                               os.path.expanduser("/data/carla/CarlaUE4.sh"))  # /home/kychen/projects/carla/CarlaUE4.sh
 
 assert os.path.exists(SERVER_BINARY)
 if "CARLA_PY_PATH" in os.environ:
     sys.path.append(os.path.expanduser(os.environ["CARLA_PY_PATH"]))
 else:
     # TODO(ekl) switch this to the binary path once the planner is in master
-    sys.path.append(os.path.expanduser("/home/kychen/projects/carla/PythonClient/"))  # /data/carla/PythonClient/
+    sys.path.append(os.path.expanduser("/data/carla/PythonClient/"))  # /home/kychen/projects/carla/PythonClient/
 
 try:
     from carla.client import CarlaClient, VehicleControl
@@ -91,8 +91,8 @@ ENV_CONFIG = {
     "reward_function": REWARD_FUNC,
     "render_x_res": 400, #800,
     "render_y_res": 175, #600,
-    "x_res": 32, #64,  # cv2.resize()
-    "y_res": 32, #64,  # cv2.resize()
+    "x_res": 64,  # cv2.resize()
+    "y_res": 64,  # cv2.resize()
     "server_map": "/Game/Maps/Town02",
     "scenarios": TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_ONE_CURVE_0, #TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
     "use_sensor": USE_SENSOR,
@@ -167,6 +167,13 @@ class CarlaEnv(gym.Env):
                 255,
                 shape=(config["y_res"], config["x_res"],
                        3 * config["framestack"]),
+                dtype=np.uint8)
+        elif config["use_sensor"] == 'use_2rgb':
+            image_space = Box(
+                0,
+                255,
+                shape=(config["y_res"], config["x_res"],
+                       2 * 3 * config["framestack"]),
                 dtype=np.uint8)
 
         # The Observation Space
@@ -312,6 +319,23 @@ class CarlaEnv(gym.Env):
             camera2.set_rotation(0.0, 0.0, 0.0)
 
             settings.add_sensor(camera2)
+
+        if self.config["use_sensor"] == 'use_2rgb':
+            camera_l = Camera("CameraRGB_L")
+            camera_l.set_image_size(self.config["render_x_res"],
+                                   self.config["render_y_res"])
+            camera_l.set(FOV=120)
+            camera_l.set_position(2.0, -0.1, 1.4)
+            camera_l.set_rotation(0.0, 0.0, 0.0)
+            settings.add_sensor(camera_l)
+
+            camera_r = Camera("CameraRGB_R")
+            camera_r.set_image_size(self.config["render_x_res"],
+                                   self.config["render_y_res"])
+            camera_r.set(FOV=120)
+            camera_r.set_position(2.0, 0.1, 1.4)
+            camera_r.set_rotation(0.0, 0.0, 0.0)
+            settings.add_sensor(camera_r)
 
 
         # Setup start and end positions
@@ -479,32 +503,48 @@ class CarlaEnv(gym.Env):
 
     def preprocess_image(self, image):
 
-        if self.config["use_sensor"] == 'use_semantic':              # image.data: (0 ~ 12)
-            data = image.data * 21                                   # data: (0 ~ 255)
+        if self.config["use_sensor"] == 'use_semantic':              # image.data: uint8(0 ~ 12)
+            data = image.data * 21                                   # data: uint8(0 ~ 255)
             data = data.reshape(self.config["render_y_res"],
                                 self.config["render_x_res"], 1)
             data = cv2.resize(
                 data, (self.config["x_res"], self.config["y_res"]),
                 interpolation=cv2.INTER_AREA)
-            data = np.expand_dims(data, 2)                          # data: (0 ~ 255),  shape(y_res, x_res, 1)
+            data = np.expand_dims(data, 2)                          # data: uint8(0 ~ 255),  shape(y_res, x_res, 1)
 
-        elif self.config["use_sensor"] == 'use_depth':    # depth: (0 ~ 1)
+        elif self.config["use_sensor"] == 'use_depth':    # depth: float64(0 ~ 1)
             # data = (image.data - 0.5) * 2
-            data = image.data * 255                                 # data: (0 ~ 255)
+            data = image.data * 255                                 # data: float64(0 ~ 255)
             data = data.reshape(self.config["render_y_res"],
                                 self.config["render_x_res"], 1)     # shape(render_y_res,render_x_res,1)
             data = cv2.resize(
                 data, (self.config["x_res"], self.config["y_res"]),
                 interpolation=cv2.INTER_AREA)                       # shape(y_res, x_res)
-            data = np.expand_dims(data, 2)                          # data: (0 ~ 255),  shape(y_res, x_res, 1)
+            data = np.expand_dims(data, 2)                          # data: float64(0 ~ 255),  shape(y_res, x_res, 1)
 
         elif self.config["use_sensor"] == 'use_rgb':
             data = image.data.reshape(self.config["render_y_res"],
                                       self.config["render_x_res"], 3)
             data = cv2.resize(
-                data, (self.config["x_res"], self.config["y_res"]),        # data: (0 ~ 255),  shape(y_res, x_res, 3)
+                data, (self.config["x_res"], self.config["y_res"]),        # data: uint8(0 ~ 255),  shape(y_res, x_res, 3)
                 interpolation=cv2.INTER_AREA)
             # data = (data.astype(np.float32) - 128) / 128
+
+        elif self.config["use_sensor"] == 'use_2rgb':
+            data_l, data_r= image[0].data, image[0].data
+            data_l = data_l.reshape(self.config["render_y_res"],
+                                      self.config["render_x_res"], 3)
+            data_r = data_r.reshape(self.config["render_y_res"],
+                                      self.config["render_x_res"], 3)
+            data_l = cv2.resize(
+                data_l, (self.config["x_res"], self.config["y_res"]),
+                interpolation=cv2.INTER_AREA)
+            data_r = cv2.resize(
+                data_r, (self.config["x_res"], self.config["y_res"]),
+                interpolation=cv2.INTER_AREA)
+
+            data = np.concatenate((data_l, data_r), axis=2)    # data: uint8(0 ~ 255),  shape(y_res, x_res, 6)
+
 
         return data
 
@@ -527,9 +567,19 @@ class CarlaEnv(gym.Env):
         elif self.config["use_sensor"] == 'use_rgb':
             camera_name = "CameraRGB"
 
-        for name, image in sensor_data.items():
-            if name == camera_name:
-                observation = image
+        elif self.config["use_sensor"] == 'use_2rgb':
+            camera_name = ["CameraRGB_L","CameraRGB_R"]
+
+        # for name, image in sensor_data.items():
+        #     if name == camera_name:
+        #         observation = image
+        if camera_name == ["CameraRGB_L","CameraRGB_R"]:
+            observation = [sensor_data["CameraRGB_L"], sensor_data["CameraRGB_R"]]
+        else:
+            observation = sensor_data[camera_name]
+
+
+
 
         cur = measurements.player_measurements
 

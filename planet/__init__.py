@@ -45,24 +45,24 @@ from __future__ import print_function
 # USE_DEPTH = False
 # LOGDIR = './log_128_8bit_40batch_a'
 
-IMG_SIZE = (64, 64)
-EPISODE_LEN = 120
-REPEATE = 1
-BATCHSIZE = 50
-REWARD_FUNC = 'custom3'
-USE_SENSOR = 'use_rgb'
-NUM_CHANNELS = 3
-LOGDIR = './log_64_8bit_50_1_rgb_I'
-
-
 # IMG_SIZE = (64, 64)
 # EPISODE_LEN = 120
 # REPEATE = 1
 # BATCHSIZE = 50
-# REWARD_FUNC = 'custom_depth'
-# USE_SENSOR = 'use_depth'
-# NUM_CHANNELS = 1
-# LOGDIR = './log_64_8bit_50_1_depth_I'
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# LOGDIR = './log_64_8bit_50_1_rgb_I'
+
+
+IMG_SIZE = (64, 64)
+EPISODE_LEN = 100
+REPEATE = 1
+BATCHSIZE = 50
+REWARD_FUNC = 'custom_depth'
+USE_SENSOR = 'use_depth'
+NUM_CHANNELS = 1
+LOGDIR = './log_64_8bit_50_1_depth_II'
 
 # IMG_SIZE = (64, 64)
 # EPISODE_LEN = 120
@@ -72,6 +72,16 @@ LOGDIR = './log_64_8bit_50_1_rgb_I'
 # USE_SENSOR = 'use_semantic'
 # NUM_CHANNELS = 1
 # LOGDIR = './log_64_8bit_50_1_semantic_I'
+
+
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_2rgb'
+# NUM_CHANNELS = 6
+# LOGDIR = './log_64_8bit_50_1_2rgb_I'
 
 
 # IMG_SIZE = (64, 64)

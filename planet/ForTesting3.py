@@ -5,7 +5,7 @@ env = CarlaEnv()
 
 cnt = 0
 
-env.reset()
+s0 = env.reset()
 while True:
     #img = env.render()
     s, _, done, _ = env.step(env.action_space.sample()+0.1)

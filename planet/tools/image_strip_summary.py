@@ -19,7 +19,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from planet import NUM_CHANNELS
-num_channels_x = NUM_CHANNELS
+
 
 
 def image_strip_summary(name, images, max_length=100, max_batch=10):
@@ -38,6 +38,12 @@ def image_strip_summary(name, images, max_length=100, max_batch=10):
     images = images[:max_batch]
   if max_length:
     images = images[:, :max_length]
+
+  num_channels_x = NUM_CHANNELS
+  if num_channels_x > 3:
+    images = images[...,:3]
+    num_channels_x = 3
+
   if images.dtype == tf.uint8:
     images = tf.to_float(images) / 255.0
   length, width = tf.shape(images)[1], tf.shape(images)[3]
