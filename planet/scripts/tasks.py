@@ -232,7 +232,7 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
     env = control.wrappers.ActionRepeat(env, action_repeat)    # reward: sum the rewards of each action
     env = control.wrappers.LimitDuration(env, max_length)
     # PixelObservations: add image to obs for env.render()
-    env = control.wrappers.PixelObservations(env, img_size, np.float64 if USE_SENSOR=='use_depth' else np.uint8, 'image')
+    env = control.wrappers.PixelObservations(env, img_size, np.float64 if USE_SENSOR in ['use_depth','use_logdepth'] else np.uint8, 'image')
     env = control.wrappers.ConvertTo32Bit(env)
     return env
   env = control.wrappers.ExternalProcess(env_ctor)

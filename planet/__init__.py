@@ -54,15 +54,32 @@ from __future__ import print_function
 # NUM_CHANNELS = 3
 # LOGDIR = './log_64_8bit_50_1_rgb_I'
 
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# LOGDIR = './log_64_8bit_50_1_rgb_II' # standard position for rgb camera.
 
 IMG_SIZE = (64, 64)
 EPISODE_LEN = 100
 REPEATE = 1
 BATCHSIZE = 50
 REWARD_FUNC = 'custom_depth'
-USE_SENSOR = 'use_depth'
+USE_SENSOR = 'use_logdepth'
 NUM_CHANNELS = 1
-LOGDIR = './log_64_8bit_50_1_depth_II'
+LOGDIR = './log_64_8bit_50_1_logdepth_I'
+
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom_depth'
+# USE_SENSOR = 'use_depth'
+# NUM_CHANNELS = 1
+# LOGDIR = './log_64_8bit_50_1_depth_II'
 
 # IMG_SIZE = (64, 64)
 # EPISODE_LEN = 120

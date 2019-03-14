@@ -154,7 +154,7 @@ class CarlaEnv(gym.Env):
                 shape=(config["y_res"], config["x_res"],
                        1 * config["framestack"]),
                 dtype=np.float32)
-        elif config["use_sensor"] == 'use_depth':
+        elif config["use_sensor"] in ['use_depth','use_logdepth']:
             image_space = Box(
                 0.0,
                 255.0,
@@ -296,7 +296,7 @@ class CarlaEnv(gym.Env):
             settings.add_sensor(camera0)
 
 
-        if self.config["use_sensor"] == 'use_depth':
+        if self.config["use_sensor"] in ['use_depth','use_logdepth']:
             camera1 = Camera("CameraDepth", PostProcessing="Depth")
             camera1.set_image_size(self.config["render_x_res"],
                                    self.config["render_y_res"])
@@ -403,6 +403,8 @@ class CarlaEnv(gym.Env):
             self.clear_server_state()
             return (self.last_obs, 0.0, True, {})
 
+
+    # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output
     def _step(self, action):
         if self.config["discrete_actions"]:
             action = DISCRETE_ACTIONS[int(action)]  # Carla action is 2D.
@@ -512,7 +514,7 @@ class CarlaEnv(gym.Env):
                 interpolation=cv2.INTER_AREA)
             data = np.expand_dims(data, 2)                          # data: uint8(0 ~ 255),  shape(y_res, x_res, 1)
 
-        elif self.config["use_sensor"] == 'use_depth':    # depth: float64(0 ~ 1)
+        elif self.config["use_sensor"] == 'use_depth':              # depth: float64(0 ~ 1)
             # data = (image.data - 0.5) * 2
             data = image.data * 255                                 # data: float64(0 ~ 255)
             data = data.reshape(self.config["render_y_res"],
@@ -521,6 +523,16 @@ class CarlaEnv(gym.Env):
                 data, (self.config["x_res"], self.config["y_res"]),
                 interpolation=cv2.INTER_AREA)                       # shape(y_res, x_res)
             data = np.expand_dims(data, 2)                          # data: float64(0 ~ 255),  shape(y_res, x_res, 1)
+
+        elif self.config["use_sensor"] == 'use_logdepth':           # depth: float64(0 ~ 1)
+            data = (np.log(image.data)+7.0)*255.0/7.0               # data: float64(0 ~ 255)
+            data = data.reshape(self.config["render_y_res"],
+                                self.config["render_x_res"], 1)     # shape(render_y_res,render_x_res,1)
+            data = cv2.resize(
+                data, (self.config["x_res"], self.config["y_res"]),
+                interpolation=cv2.INTER_AREA)                       # shape(y_res, x_res)
+            data = np.expand_dims(data, 2)                          # data: float64(0 ~ 255),  shape(y_res, x_res, 1)
+
 
         elif self.config["use_sensor"] == 'use_rgb':
             data = image.data.reshape(self.config["render_y_res"],
@@ -561,7 +573,7 @@ class CarlaEnv(gym.Env):
         if self.config["use_sensor"] == 'use_semantic':
             camera_name = "CameraSemantic"
 
-        elif self.config["use_sensor"] == 'use_depth':
+        elif self.config["use_sensor"] in ['use_depth','use_logdepth']:
             camera_name = "CameraDepth"
 
         elif self.config["use_sensor"] == 'use_rgb':
@@ -654,7 +666,7 @@ class CarlaEnv(gym.Env):
                 out_file = os.path.join(
                     out_dir, "{}_{:>04}.jpg".format(self.episode_id,
                                                     self.num_steps))
-                scipy.misc.imsave(out_file, image.data)
+                scipy.misc.imsave(out_file, image.data)            # image.data without preprocess.
 
         assert observation is not None, sensor_data
         return observation, py_measurements
