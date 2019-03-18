@@ -92,11 +92,11 @@ def _model_components(config, params):
 
 
 def _tasks(config, params):
-  tasks = params.get('tasks', ['cheetah_run'])
+  tasks = params.get('tasks', ['cheetah_run'])  # tasks = ['breakout']
   if tasks == 'all':
     tasks = [
         'cartpole_balance', 'cartpole_swingup', 'finger_spin', 'cheetah_run',
-        'cup_catch', 'walker_walk', 'pendulum', 'carla']
+        'cup_catch', 'walker_walk', 'pendulum', 'carla', 'breakout']
   tasks = [getattr(tasks_lib, name)(config, params) for name in tasks]
   def common_spaces_ctor(task, action_spaces):
     env = task.env_ctor()

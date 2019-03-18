@@ -23,6 +23,7 @@ import os
 import numpy as np
 
 import gym
+import cv2
 
 from planet import control
 from planet import networks
@@ -154,7 +155,13 @@ class DeepMindWrapper_gym(object):
       raise ValueError("Only render mode 'rgb_array' is supported.")
     del args  # Unused
     del kwargs  # Unused
-    return self._env.render(mode='rgb_array',render_size=(100,100))[18:82,18:82]  # pendulum.py is modified.
+    return self._env.render(mode='rgb_array',render_size=(100,100))[18:82,18:82]
+    # pendulum.py is modified:
+    '''def render(self, mode='human', render_size=(500,500)):
+           ...
+           self.viewer = rendering.Viewer(render_size[0],render_size[1])
+           ...
+    '''
 
 
 
@@ -171,6 +178,84 @@ def _dm_control_env_gym(action_repeat, max_length, env_name):
     return env
   env = control.wrappers.ExternalProcess(env_ctor)
   return env
+
+
+
+
+# gym atari
+#=============================================================
+
+def breakout(config, params):
+  action_repeat = params.get('action_repeat', REPEATE)
+  max_length = EPISODE_LEN // action_repeat
+  state_components = [
+      'reward', 'state']
+  env_ctor = functools.partial(
+      _dm_control_env_gym_atari, action_repeat, max_length, 'Breakout-v0')
+  return Task('breakout', env_ctor, max_length, state_components)
+
+
+class DeepMindWrapper_gym_atari(object):
+  """Wraps a Gym environment into an interface for downstream process"""
+
+  metadata = {'render.modes': ['rgb_array']}
+  reward_range = (-np.inf, np.inf)
+
+  def __init__(self, env, render_size, camera_id=0):
+    self._env = env
+    self._render_size = render_size
+    self._camera_id = camera_id
+    self.observation_space = gym.spaces.Dict({'state':gym.spaces.Box(low=-1,high=1,shape=(1,))})
+    self.action_space = gym.spaces.Box(low=-1,high=1,shape=(1,))
+
+  def __getattr__(self, name):
+    return getattr(self._env, name)
+
+  def discrete_action(self, a):
+    condition_list = [a>0.5, a>0.0, a>-0.5, True]
+    choice_list = [0 ,1, 2 ,3]
+    return np.select(condition_list, choice_list)
+
+  def step(self, action):
+    # As for env Breakout-v0, action space is {0,1,2,3}
+    self._env.step(0)
+    self._env.step(0)
+    self._env.step(0)
+    s_img, reward, _, info = self._env.step(self.discrete_action(action))
+    self.img = cv2.resize(s_img, (64,64),interpolation=cv2.INTER_AREA)
+    obs = {'state':np.array([0.0])}
+    # self._env.render()
+    return obs, reward, False, {}     # done is always False.
+
+  def reset(self):
+    s_img = self._env.reset()
+    self.img = cv2.resize(s_img, (64,64), interpolation=cv2.INTER_AREA)
+    return {'state':np.array([0.0])}
+
+  def render(self, *args, **kwargs):
+    if kwargs.get('mode', 'rgb_array') != 'rgb_array':
+      raise ValueError("Only render mode 'rgb_array' is supported.")
+    del args  # Unused
+    del kwargs  # Unused
+    return self.img
+
+
+
+def _dm_control_env_gym_atari(action_repeat, max_length, env_name):
+  import gym
+  def env_ctor():
+    env = gym.make(env_name)     # 'Breakout-v0'
+    env = env.env                # 'remove TimeLimit wrapper
+    env = DeepMindWrapper_gym_atari(env, (64, 64))
+    env = control.wrappers.ActionRepeat(env, action_repeat)
+    env = control.wrappers.LimitDuration(env, max_length)
+    env = control.wrappers.PixelObservations(env, (64, 64), np.uint8, 'image')
+    env = control.wrappers.ConvertTo32Bit(env)
+    return env
+  env = control.wrappers.ExternalProcess(env_ctor)
+  return env
+
+
 
 
 # carla

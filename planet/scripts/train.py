@@ -120,7 +120,7 @@ if __name__ == '__main__':
       '--config', default='default',
       help='Select a configuration function from scripts/configs.py.')
   parser.add_argument(
-      '--params', default="{tasks: [carla]}", type=str,   # pendulum carla
+      '--params', default="{tasks: [breakout]}", type=str,   # pendulum carla
       help='YAML formatted dictionary to be used by the config.')
   parser.add_argument(
       '--ping_every', type=int, default=0,
