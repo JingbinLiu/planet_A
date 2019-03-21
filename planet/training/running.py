@@ -39,7 +39,7 @@ class WorkerConflict(Exception):
   pass
 
 
-class SkipRun(Exception):
+class SkipRun(Exception):  #
   pass
 
 
@@ -92,14 +92,14 @@ class Experiment(object):
     """
     for current_run in self._generate_run_numbers():
       logdir = self._basedir and os.path.join(
-          self._basedir, '{:05}'.format(current_run))
+          self._basedir, '{:05}'.format(current_run))          # get a logdir e.g. 00003/
       try:
         run = Run(
             logdir, self._process_fn, self._start_fn, self._resume_fn,
             self._worker_name, self._ping_every, self._ping_stale,
             self._resume_runs)
         yield run
-      except SkipRun:
+      except SkipRun:  # raised by Run.__init__()
         continue
       except StopExperiment:
         tf.logging.info('Stopping.')
@@ -162,14 +162,14 @@ class Run(object):
       worker_name: Unique string identifier of the current worker.
       ping_every: Interval for storing PING files indicating work on a run.
     """
-    self._logdir = os.path.expanduser(logdir)
+    self._logdir = os.path.expanduser(logdir)  # expand user: '~/file'-->'/home/liu/file'
     self._process_fn = process_fn
     self._worker_name = worker_name
     self._ping_every = ping_every
     self._ping_stale = ping_stale
     self._logger = self._create_logger()
     try:
-      if self._should_start():
+      if self._should_start():   # Determine whether a run can be started.
         self._claim()
         self._logger.info('Start.')
         self._init_fn = start_fn
@@ -191,7 +191,7 @@ class Run(object):
   def __iter__(self):
     """Iterate over the process function and finalize the log directory."""
     try:
-      args = self._init_fn and self._init_fn(self._logdir)
+      args = self._init_fn and self._init_fn(self._logdir)  # _init_fn() is start() or resume(), returns config.
       if args is None:
         args = ()
       if not isinstance(args, tuple):
@@ -241,7 +241,7 @@ class Run(object):
       # self._logger.debug('Not started yet.')
       return False
     last_worker, last_ping = self._read_ping()
-    if last_worker != self._worker_name and last_ping < self._ping_stale:
+    if last_worker != self._worker_name and last_ping < self._ping_stale:   # resuming must satisty last_ping >= self._ping_stale
       # self._logger.debug('Already in progress.')
       return False
     return True
@@ -355,7 +355,9 @@ class Run(object):
 
   def _create_logger(self):
     """Create a logger that prefixes messages with the current run name."""
-    run_name = self._logdir and os.path.basename(self._logdir)
+
+    # e.g.: WARNING:tensorflow:Worker 2e22e6ac-eac4-49c0-ba9f-a7c53c4ba877 run 00001: message...
+    run_name = self._logdir and os.path.basename(self._logdir)  # '00001'
     methods = {}
     for name in 'debug info warning'.split():
       methods[name] = lambda unused_self, message: getattr(tf.logging, name)(

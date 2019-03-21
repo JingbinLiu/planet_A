@@ -38,9 +38,9 @@ class CustomOptimizer(object):
 
   def minimize(self, loss):
     summaries = []
-    gradients, variables = zip(*self._optimizer.compute_gradients(
-        loss, self._variables, colocate_gradients_with_ops=True))
-    gradient_norm = tf.global_norm(gradients)
+    gradients, variables = zip(*self._optimizer.compute_gradients(       #  tf.train.AdamOptimizer.compute_gradients(loss, var_list, ...)
+        loss, self._variables, colocate_gradients_with_ops=True))        #  returns a list of (gradient, variable) pairs where "gradient" is the gradient for "variable".
+    gradient_norm = tf.global_norm(gradients)        # Computes the global norm of multiple tensors.
     if self._clipping:
       gradients, _ = tf.clip_by_global_norm(
           gradients, self._clipping, gradient_norm)
@@ -50,7 +50,7 @@ class CustomOptimizer(object):
     optimize = self._optimizer.apply_gradients(zip(gradients, variables))
     return optimize, summary
 
-  def _define_summaries(self, graph):
+  def _define_summaries(self, graph):   # Returns a scalar Tensor of type string
     summaries = []
     summaries.append(tf.summary.scalar('learning_rate', self._learning_rate))
     summaries.append(tf.summary.scalar('gradient_norm', graph.gradient_norm))

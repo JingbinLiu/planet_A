@@ -57,13 +57,13 @@ from planet.scripts import configs
 
 from planet import LOGDIR
 
-def start(logdir, args):
+def start(logdir, args):            # 'logpath/00001'
   with args.params.unlocked:
     args.params.logdir = logdir
-  config = tools.AttrDict()
-  with config.unlocked:
-    config = getattr(configs, args.config)(config, args.params)  # function args.config('default'/'debug') is defined in configs(configs.py). task is defined.
-  training.utility.collect_initial_episodes(config)
+  config = tools.AttrDict()         # unlocked = False, config = AttrDict {}
+  with config.unlocked:             # unlocked = False, use contextlib.contextmanager to set config.
+    config = getattr(configs, args.config)(config, args.params)  # configs.(args.config)() = configs.default(), task is configured.
+  training.utility.collect_initial_episodes(config)   # the only difference compared to resume()
   return config
 
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--logdir', default=LOGDIR)
   parser.add_argument(
-      '--num_runs', type=int, default=1)
+      '--num_runs', type=int, default=1) # 00001 00002 00003 ...
   parser.add_argument(
       '--config', default='default',
       help='Select a configuration function from scripts/configs.py.')
@@ -129,7 +129,7 @@ if __name__ == '__main__':
       '--resume_runs', type=boolean, default=True,
       help='Whether to resume unfinished runs in the log directory.')
   args_, remaining = parser.parse_known_args()  # args_ = Namespace(config='default', logdir='./log_debug', num_runs=1, params={'tasks': ['cheetah_run']}, ping_every=0, resume_runs=True)
-  args_.params = tools.AttrDict(yaml.safe_load(args_.params.replace('#', ',')))  # class AttrDict: """Wrap a dictionary to access keys as attributes."""
+  args_.params = tools.AttrDict(yaml.safe_load(args_.params.replace('#', ','))) # {'tasks': ['breakout']} # class AttrDict: """Wrap a dictionary to access keys as attributes."""
   args_.logdir = args_.logdir and os.path.expanduser(args_.logdir)
   remaining.insert(0, sys.argv[0])
   tf.app.run(lambda _: main(args_), remaining)   # tf.app.run(main, argv): Runs the program with an optional 'main' function and 'argv' list.

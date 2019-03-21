@@ -19,7 +19,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 
-def preprocess(image, bits):
+def preprocess(image, bits):  # image pixel (0~255)
   bins = 2 ** bits
   image = tf.to_float(image)
   if bits < 8:
@@ -30,7 +30,7 @@ def preprocess(image, bits):
   return image
 
 
-def postprocess(image, bits, dtype=tf.float32):
+def postprocess(image, bits, dtype=tf.float32):  # image pixel (-1~1)
   bins = 2 ** bits
   if dtype == tf.float32:
     image = tf.floor(bins * (image + 0.5)) / bins

@@ -29,15 +29,15 @@ from planet import tools
 from planet.scripts import tasks as tasks_lib
 from planet import BATCHSIZE
 
-
-def default(config, params):
+# with config.unlocked:
+def default(config, params):   # config={}, params = {'tasks': ['breakout'], 'logdir': './log_testing/00001'}
   config.debug = False
   config.zero_step_losses = tools.AttrDict(_unlocked=True)
-  config = _data_processing(config, params)
-  config = _model_components(config, params)
-  config = _tasks(config, params)
-  config = _loss_functions(config, params)
-  config = _training_schedule(config, params)
+  config = _data_processing(config, params)    # data config
+  config = _model_components(config, params)   # model config
+  config = _tasks(config, params)              # task config
+  config = _loss_functions(config, params)     # loss config
+  config = _training_schedule(config, params)  # training config
   return config
 
 
@@ -97,7 +97,7 @@ def _tasks(config, params):
     tasks = [
         'cartpole_balance', 'cartpole_swingup', 'finger_spin', 'cheetah_run',
         'cup_catch', 'walker_walk', 'pendulum', 'carla', 'breakout']
-  tasks = [getattr(tasks_lib, name)(config, params) for name in tasks]
+  tasks = [getattr(tasks_lib, name)(config, params) for name in tasks]   # tasks_lib is tasks.py  # config is not used for creating tasks.
   def common_spaces_ctor(task, action_spaces):
     env = task.env_ctor()
     env = control.wrappers.SelectObservations(env, ['image'])
@@ -109,7 +109,7 @@ def _tasks(config, params):
       env_ctor = functools.partial(common_spaces_ctor, task, action_spaces)
       tasks[index] = tasks_lib.Task(
           task.name, env_ctor, task.max_length, ['reward'])
-  for name in tasks[0].state_components:
+  for name in tasks[0].state_components:           # state_components of task, e.g. ['reward', 'position', 'velocity']
     config.heads[name] = networks.feed_forward
     config.zero_step_losses[name] = 1.0
   config.tasks = tasks
@@ -119,11 +119,11 @@ def _tasks(config, params):
 def _loss_functions(config, params):
   config.free_nats = params.get('free_nats', 2.0)
   config.stop_os_posterior_gradient = True
-  config.zero_step_losses.image = params.get('image_loss_scale', 1.0)
+  config.zero_step_losses.image = params.get('image_loss_scale', 1.0)              # config.zero_step_losses
   config.zero_step_losses.divergence = params.get('divergence_scale', 1.0)
   config.zero_step_losses.global_divergence = params.get('global_divergence_scale', 0.1)
   config.zero_step_losses.reward = params.get('reward_scale', 10.0)
-  config.overshooting = params.get('overshooting', config.batch_shape[1] - 1)
+  config.overshooting = params.get('overshooting', config.batch_shape[1] - 1)  # 49 # config.overshooting_losses
   config.overshooting_losses = config.zero_step_losses.copy(_unlocked=True)
   config.overshooting_losses.reward = params.get(
       'overshooting_reward_scale', 100.0)
@@ -134,15 +134,15 @@ def _loss_functions(config, params):
 
 
 def _training_schedule(config, params):
-  config.train_steps = int(params.get('train_steps', 50000))
-  config.test_steps = int(params.get('test_steps', 100))
-  config.max_steps = int(params.get('max_steps', 2e7))
+  config.train_steps = int(params.get('train_steps', 50000))  # train_steps for each epoch
+  config.test_steps = int(params.get('test_steps', 100))      # test_steps for each epoch
+  config.max_steps = int(params.get('max_steps', 2e7))        # steps for each run
   config.train_log_every = config.train_steps
   config.train_checkpoint_every = None
   config.test_checkpoint_every = int(
       params.get('checkpoint_every', config.test_steps))
   config.savers = [tools.AttrDict(exclude=(r'.*_temporary.*',))]
-  config.mean_metrics_every = config.train_steps // 10
+  config.mean_metrics_every = config.train_steps // 10         # steps for each metrics
   config.train_dir = os.path.join(params.logdir, 'train_episodes')
   config.test_dir = os.path.join(params.logdir, 'test_episodes')
   config.random_collects = _initial_collection(config, params)
@@ -164,22 +164,22 @@ def _define_optimizers(config, params):
   kwargs = dict(
       optimizer_cls=functools.partial(tf.train.AdamOptimizer, epsilon=1e-4),
       learning_rate=params.get('learning_rate', 1e-3),
-      schedule=functools.partial(tools.schedule.linear, ramp=10000),
+      schedule=functools.partial(tools.schedule.linear, ramp=10000),          # schedule for varying the learning rate.
       clipping=params.get('gradient_clipping', 1000.0))
   optimizers.main = functools.partial(
-      tools.CustomOptimizer, include=r'.*', exclude=diagnostics, **kwargs)
+      tools.CustomOptimizer, include=r'.*', exclude=diagnostics, **kwargs)    # exclude all except ['image', 'reward']
   for name in config.heads:
     assert config.zero_step_losses.get(name), name
     # Diagnostic heads use separate optimizers to not interfere with the model.
     if name in gradient_heads:
       continue
     optimizers[name] = functools.partial(
-        tools.CustomOptimizer, include=r'.*/head_{}/.*'.format(name), **kwargs)
+        tools.CustomOptimizer, include=r'.*/head_{}/.*'.format(name), **kwargs)   # include ['states']
   return optimizers
 
 
 def _initial_collection(config, params):
-  num_seed_episodes = params.get('num_seed_episodes', 5)
+  num_seed_episodes = params.get('num_seed_episodes', 5)   # 5 initial random episodes
   sims = tools.AttrDict(_unlocked=True)
   for task in config.tasks:
     sims['train-' + task.name] = tools.AttrDict(
@@ -201,8 +201,8 @@ def _active_collection(config, params):
       sim = _define_simulation(task, config, params, horizon, batch_size)
       sim.unlock()
       sim.save_episode_dir = config.train_dir
-      sim.steps_after = params.get('collect_every', 5000)
-      sim.steps_every = params.get('collect_every', 5000)
+      sim.steps_after = params.get('collect_every', 5000)    # sim after 5000 steps
+      sim.steps_every = params.get('collect_every', 5000)    # sim every 5000 steps
       sim.exploration = tools.AttrDict(
           scale=params.get('exploration_noises', [0.3])[index],
           schedule=functools.partial(
@@ -228,5 +228,5 @@ def _define_simulation(task, config, params, horizon, batch_size):
   return tools.AttrDict(
       task=task,
       batch_size=batch_size,
-      planner=planner,
+      planner=planner,     # planner needs a objective
       objective=objective)

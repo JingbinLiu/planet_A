@@ -1,12 +1,24 @@
 
 
 # planet/scripts/train.py
+def start(logdir, args):
+def resume(logdir, args):
+def process(logdir, config, args):
+
 def main(args):
-    experiment = training.Experiment(...)
+    experiment = training.Experiment(
+        process_fn=functools.partial(process, args=args),
+        start_fn=functools.partial(start, args=args),
+        resume_fn=functools.partial(resume, args=args), ...)
+
     for run in experiment:          # the method __iter__(self) defined in experiment.
         for unused_score in run:    # the method __iter__(self) defined in run.
             pass
 
+class Experiment(object):
+    def __iter__(self):
+
+num_runs
 
 # planet/training/running.py
 class Run(object):
@@ -17,7 +29,7 @@ class Run(object):
 
         # planet/scripts/train.py
         def start(logdir, args):
-            config = getattr(configs, args.config)(config, args.params)  # function args.config('default'/'debug') is defined in configs(configs.py). task is defined.
+            config = getattr(configs, args.config)(config, args.params)  # configs.(args.config) = configs.default, task is defined.
             training.utility.collect_initial_episodes(config)
 
             # planet/training/utility.py

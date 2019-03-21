@@ -30,10 +30,15 @@ from planet.training import trainer as trainer_
 
 def set_up_logging():
   """Configure the TensorFlow logger."""
+
   tf.logging.set_verbosity(tf.logging.INFO)
+  # usage: tf.logging.info('info message...')
+
+  # logging not used
   logging.getLogger('tensorflow').propagate = False
   logging.getLogger('tensorflow').format = '%(message)s'
   logging.basicConfig(level=logging.INFO, format='%(message)s')
+
 
 
 def save_config(config, logdir=None):

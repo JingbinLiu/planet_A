@@ -33,7 +33,7 @@ from planet import tools
 from planet import IMG_SIZE, EPISODE_LEN, REPEATE, USE_SENSOR
 
 Task = collections.namedtuple(
-    'Task', 'name, env_ctor, max_length, state_components')
+    'Task', 'name, env_ctor, max_length, state_components')  #  names for elements of the tuple.('Task' is typename.)
 
 
 def cartpole_balance(config, params):
@@ -188,8 +188,8 @@ def _dm_control_env_gym(action_repeat, max_length, env_name):
 def breakout(config, params):
   action_repeat = params.get('action_repeat', REPEATE)
   max_length = EPISODE_LEN // action_repeat
-  state_components = [
-      'reward', 'state']
+  # state_components = ['reward', 'state']
+  state_components = ['reward']
   env_ctor = functools.partial(
       _dm_control_env_gym_atari, action_repeat, max_length, 'Breakout-v0')
   return Task('breakout', env_ctor, max_length, state_components)
@@ -205,7 +205,8 @@ class DeepMindWrapper_gym_atari(object):
     self._env = env
     self._render_size = render_size
     self._camera_id = camera_id
-    self.observation_space = gym.spaces.Dict({'state':gym.spaces.Box(low=-1,high=1,shape=(1,))})
+    # self.observation_space = gym.spaces.Dict({'state':gym.spaces.Box(low=-1,high=1,shape=(1,))})
+    self.observation_space = gym.spaces.Dict()
     self.action_space = gym.spaces.Box(low=-1,high=1,shape=(1,))
 
   def __getattr__(self, name):
@@ -221,16 +222,17 @@ class DeepMindWrapper_gym_atari(object):
     self._env.step(0)
     self._env.step(0)
     self._env.step(0)
-    s_img, reward, _, info = self._env.step(self.discrete_action(action))
-    self.img = cv2.resize(s_img, (64,64),interpolation=cv2.INTER_AREA)
-    obs = {'state':np.array([0.0])}
+    s_img, reward, done, info = self._env.step(self.discrete_action(action))
+    self.img = cv2.resize(s_img, IMG_SIZE,interpolation=cv2.INTER_AREA)
+    # obs = {'state':np.array([0.0])}
+    obs = {}
     # self._env.render()
-    return obs, reward, False, {}     # done is always False.
+    return obs, reward, done, {}     # done can be set to always False.
 
   def reset(self):
     s_img = self._env.reset()
-    self.img = cv2.resize(s_img, (64,64), interpolation=cv2.INTER_AREA)
-    return {'state':np.array([0.0])}
+    self.img = cv2.resize(s_img, IMG_SIZE, interpolation=cv2.INTER_AREA)
+    return {}
 
   def render(self, *args, **kwargs):
     if kwargs.get('mode', 'rgb_array') != 'rgb_array':
@@ -245,11 +247,11 @@ def _dm_control_env_gym_atari(action_repeat, max_length, env_name):
   import gym
   def env_ctor():
     env = gym.make(env_name)     # 'Breakout-v0'
-    env = env.env                # 'remove TimeLimit wrapper
-    env = DeepMindWrapper_gym_atari(env, (64, 64))
+    env = env.env                # 'remove the TimeLimit wrapper
+    env = DeepMindWrapper_gym_atari(env, IMG_SIZE)
     env = control.wrappers.ActionRepeat(env, action_repeat)
     env = control.wrappers.LimitDuration(env, max_length)
-    env = control.wrappers.PixelObservations(env, (64, 64), np.uint8, 'image')
+    env = control.wrappers.PixelObservations(env, IMG_SIZE, np.uint8, 'image')
     env = control.wrappers.ConvertTo32Bit(env)
     return env
   env = control.wrappers.ExternalProcess(env_ctor)

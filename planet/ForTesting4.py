@@ -8,7 +8,7 @@ cnt = 0
 
 s0 = env.reset()
 while cnt<1000:
-    env.render()
+    #env.render()
     env.step(0)
     env.step(0)
     env.step(0)

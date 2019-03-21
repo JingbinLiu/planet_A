@@ -287,7 +287,9 @@ class LimitDuration(object):
     self.step_error = False
     self._step += 1
     # print(self._step,self._duration, done)
-    if self._step >= self._duration:    # if step error occurs, self._step will be reset to 0, then self._step will always < self._duration and done is False.
+    # if self._step >= self._duration:    # if step error occurs, self._step will be reset to 0, then self._step will always < self._duration and done is False.
+    if (self._step > 50 and done) or self._step >= self._duration:
+      # print(self._step)
       done = True
       self._step = None
 

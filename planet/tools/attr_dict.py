@@ -23,7 +23,7 @@ class AttrDict(dict):
   """Wrap a dictionary to access keys as attributes."""
 
   def __init__(self, *args, **kwargs):
-    unlocked = kwargs.pop('_unlocked', False)
+    unlocked = kwargs.pop('_unlocked', False)   # returns  kwargs['_unlocked'], otherwise False.
     super(AttrDict, self).__init__(*args, **kwargs)
     super(AttrDict, self).__setattr__('_unlocked', unlocked)
 
@@ -34,11 +34,11 @@ class AttrDict(dict):
     return self.get(key, None)
 
   def __setattr__(self, key, value):
-    if not self._unlocked:
+    if not self._unlocked:    # Do not set attribute if obj is locked.
       message = "Cannot set attribute '{}'.".format(key)
       message += " Use 'with obj.unlocked:' scope to set attributes."
       raise RuntimeError(message)
-    if key.startswith('__'):
+    if key.startswith('__'):  # Do not set attribute for unimplemented magic attributes.
       raise AttributeError("Cannot set magic attribute '{}'".format(key))
     self[key] = value
 
@@ -49,17 +49,17 @@ class AttrDict(dict):
     yield
     self.lock()
 
-  def lock(self):
+  def lock(self):   # set '_unlocked' to False recursively for all the subvalues.
     super(AttrDict, self).__setattr__('_unlocked', False)
     for value in self.values():
       if isinstance(value, AttrDict):
         value.lock()
 
-  def unlock(self):
+  def unlock(self): # set '_unlocked' to True recursively for all the subvalues.
     super(AttrDict, self).__setattr__('_unlocked', True)
     for value in self.values():
       if isinstance(value, AttrDict):
         value.unlock()
 
   def copy(self, _unlocked=False):
-    return type(self)(super(AttrDict, self).copy(), _unlocked=_unlocked)
+    return type(self)(super(AttrDict, self).copy(), _unlocked=_unlocked)   # copy the dict and then convert it to AttrDict.
