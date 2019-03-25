@@ -205,8 +205,10 @@ class DeepMindWrapper_gym_atari(object):
     self._env = env
     self._render_size = render_size
     self._camera_id = camera_id
-    # self.observation_space = gym.spaces.Dict({'state':gym.spaces.Box(low=-1,high=1,shape=(1,))})
-    self.observation_space = gym.spaces.Dict()
+
+    self.observation_space = gym.spaces.Dict({'state':gym.spaces.Box(low=-1,high=1,shape=(1,))})
+    # self.observation_space = gym.spaces.Dict()
+
     self.action_space = gym.spaces.Box(low=-1,high=1,shape=(1,))
 
   def __getattr__(self, name):
@@ -219,20 +221,24 @@ class DeepMindWrapper_gym_atari(object):
 
   def step(self, action):
     # As for env Breakout-v0, action space is {0,1,2,3}
+    # self._env.render()
     self._env.step(0)
     self._env.step(0)
     self._env.step(0)
     s_img, reward, done, info = self._env.step(self.discrete_action(action))
     self.img = cv2.resize(s_img, IMG_SIZE,interpolation=cv2.INTER_AREA)
-    # obs = {'state':np.array([0.0])}
-    obs = {}
-    # self._env.render()
+
+    obs = {'state':np.array([0.0])}
+    # obs = {}
+
     return obs, reward, done, {}     # done can be set to always False.
 
   def reset(self):
     s_img = self._env.reset()
     self.img = cv2.resize(s_img, IMG_SIZE, interpolation=cv2.INTER_AREA)
-    return {}
+
+    return {'state': np.array([0.0])}
+    # return {}
 
   def render(self, *args, **kwargs):
     if kwargs.get('mode', 'rgb_array') != 'rgb_array':

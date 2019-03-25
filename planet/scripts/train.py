@@ -57,6 +57,8 @@ from planet.scripts import configs
 
 from planet import LOGDIR
 
+
+''' 'start' and 'resume' return config for training.'''
 def start(logdir, args):            # 'logpath/00001'
   with args.params.unlocked:
     args.params.logdir = logdir
@@ -65,7 +67,6 @@ def start(logdir, args):            # 'logpath/00001'
     config = getattr(configs, args.config)(config, args.params)  # configs.(args.config)() = configs.default(), task is configured.
   training.utility.collect_initial_episodes(config)   # the only difference compared to resume()
   return config
-
 
 def resume(logdir, args):
   with args.params.unlocked:
@@ -76,8 +77,9 @@ def resume(logdir, args):
   return config
 
 
+''' 'process' defines the training process using the config.'''
 def process(logdir, config, args):
-  tf.reset_default_graph()
+  tf.reset_default_graph()        # Clears the default graph stack and resets the global default graph.
   dataset = tools.numpy_episodes(
       config.train_dir, config.test_dir, config.batch_shape,
       loader=config.data_loader,
@@ -120,7 +122,7 @@ if __name__ == '__main__':
       '--config', default='default',
       help='Select a configuration function from scripts/configs.py.')
   parser.add_argument(
-      '--params', default="{tasks: [breakout]}", type=str,   # pendulum carla
+      '--params', default="{tasks: [breakout]}", type=str,   # pendulum carla breakout
       help='YAML formatted dictionary to be used by the config.')
   parser.add_argument(
       '--ping_every', type=int, default=0,

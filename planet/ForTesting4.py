@@ -14,10 +14,10 @@ while cnt<1000:
     env.step(0)
     obs, reward, done, info = env.step(env.action_space.sample())
     print(cnt,done,reward)
-    #print(s)
+    print(done)
     cnt += 1
-    # if cnt % 100 == 0:
-    #     env.reset()
+    if cnt % 100 == 0:
+        env.reset()
 
 # def discrete_action(a):
 #     condition_list = [a>0.5, a>0.0, a>-0.5, True]

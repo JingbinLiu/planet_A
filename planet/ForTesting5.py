@@ -41,9 +41,7 @@ logger = logging.getLogger("new_logger")
 logger.error("error message")
 
 
-from planet import tools
-ad = tools.AttrDict({'a':1})
-ad1 = ad.copy()
+
 
 
 import contextlib
@@ -63,3 +61,41 @@ d = {'a':1,'b':2}
 for key,values in  d.items():
     print (key,values)
 
+
+
+import multiprocessing
+import time
+
+
+def proc1(pipe):
+    while True:
+        for i in range(100):
+            print("proc1发送 %s" % i)
+            pipe.send(i)
+            time.sleep(2)
+
+
+# def proc2(pipe):
+#     while True:
+#         print('proc2 接收:', pipe.recv())
+#         #time.sleep(2)
+
+def proc2(pipe):
+    print('proc2 接收:', pipe.recv())
+    print('proc2 接收:', pipe.recv())
+    print('proc2 接收:', pipe.recv())
+        #time.sleep(2)
+
+# Build a pipe
+pipe = multiprocessing.Pipe()
+print(pipe)
+
+# Pass an end of the pipe to process 1
+p1 = multiprocessing.Process(target=proc1, args=(pipe[0],))
+# Pass the other end of the pipe to process 2
+p2 = multiprocessing.Process(target=proc2, args=(pipe[1],))
+
+p1.start()
+p2.start()
+p1.join()
+p2.join()

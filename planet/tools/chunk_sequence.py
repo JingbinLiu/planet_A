@@ -42,18 +42,18 @@ def chunk_sequence(sequence, chunk_length, randomize=True, num_chunks=None):
     Nested dict of sequence tensors with chunk dimension.
   """
   with tf.device('/cpu:0'):
-    if 'length' in sequence:
+    if 'length' in sequence:                    # sequence = {'state': <tf.Tensor 'arg3:0' shape=(?, 1) dtype=float32>, 'image': <tf.Tensor 'arg1:0' shape=(?, 64, 64, 3) dtype=uint8>, 'action': <tf.Tensor 'arg0:0' shape=(?, 1) dtype=float32>, 'reward': <tf.Tensor 'arg2:0' shape=(?,) dtype=float32>}
       length = sequence.pop('length')
     else:
-      length = tf.shape(nested.flatten(sequence)[0])[0]
+      length = tf.shape(nested.flatten(sequence)[0])[0]        # nested.flatten(): Combine all leaves of a nested structure into a tuple.
     if randomize:
       if num_chunks is None:
         num_chunks = tf.maximum(1, length // chunk_length - 1)
       else:
         num_chunks = num_chunks + 0 * length
       used_length = num_chunks * chunk_length
-      max_offset = length - used_length
-      offset = tf.random_uniform((), 0, max_offset + 1, dtype=tf.int32)
+      max_offset = length - used_length                        # the episode length must >= chunk_length * num_chunks
+      offset = tf.random_uniform((), 0, max_offset + 1, dtype=tf.int32)        # the starting point for clipping.
     else:
       if num_chunks is None:
         num_chunks = length // chunk_length
@@ -62,15 +62,15 @@ def chunk_sequence(sequence, chunk_length, randomize=True, num_chunks=None):
       used_length = num_chunks * chunk_length
       max_offset = 0
       offset = 0
-    clipped = nested.map(
+    clipped = nested.map(                                     # nested.map(): Apply a function to every element in a nested structure.
         lambda tensor: tensor[offset: offset + used_length],
         sequence)
     chunks = nested.map(
         lambda tensor: tf.reshape(
-            tensor, [num_chunks, chunk_length] + tensor.shape[1:].as_list()),
+            tensor, [num_chunks, chunk_length] + tensor.shape[1:].as_list()),          # reshape the clipped episode (num_chunks*chunk_length,64,64,3) into (num_chunks, chunk_length,64,64,3)
         clipped)
     chunks['length'] = chunk_length * tf.ones((num_chunks,), dtype=tf.int32)
-    return chunks
+    return chunks  # shape(num_chunks, chunk_length,64,64,3)
 
 
 def _pad_tensor(tensor, length, value):

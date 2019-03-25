@@ -101,11 +101,20 @@ from __future__ import print_function
 # LOGDIR = './log_64_8bit_50_1_2rgb_I'
 
 
-IMG_SIZE = (128, 128)
-EPISODE_LEN = 200
+IMG_SIZE = (64, 64)
+EPISODE_LEN = 222
 REPEATE = 1
-BATCHSIZE = 10
+BATCHSIZE = 13
 REWARD_FUNC = 'custom3'
 USE_SENSOR = 'use_rgb'
 NUM_CHANNELS = 3
-LOGDIR = './log_testing...'
+LOGDIR = './debug_log'
+
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# LOGDIR = './log_testing...'

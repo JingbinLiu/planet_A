@@ -288,20 +288,39 @@ class LimitDuration(object):
     self._step += 1
     # print(self._step,self._duration, done)
     # if self._step >= self._duration:    # if step error occurs, self._step will be reset to 0, then self._step will always < self._duration and done is False.
-    if (self._step > 50 and done) or self._step >= self._duration:
+
+
+    # if (self._step > 50 and done) or self._step >= self._duration:
+    #   # print(self._step)
+    #   done = True
+    #   self._step = None
+    #
+    # else:
+    #   # assert not done
+    #   if done:  # when self._step<=50 and done=True.
+    #     print('step error... please check the env.')
+    #     self.step_error = True
+
+
+    if done == 'step_error':
+      print('step error... please check the env.')
+      self.step_error = True
+      done = True
+
+    elif self._step <= 50:  # for num_chunks=1, chunk_length=50.
+      done = False
+
+    elif done or self._step >= self._duration:
       # print(self._step)
       done = True
       self._step = None
 
-    else:
-      # assert not done
-      if done:
-        print('step error... please check the env.')
-        self.step_error = True
+
     return observ, reward, done, info
 
+
   def reset(self):
-    self._step = 0        # if step error occurs, self._step will be reset to 0.
+    self._step = 0        # if step error occurs, reset the env, self._step will be reset to 0.
     return self._env.reset()
 
 
@@ -381,7 +400,7 @@ class CollectGymDataset(object):
   def step(self, action, *args, **kwargs):
     if kwargs.get('blocking', True):
       transition = self._env.step(action, *args, **kwargs)
-      return self._process_step(action, *transition)
+      return self._process_step(action, *transition)   # use the transition tuple as arguments.
     else:
       future = self._env.step(action, *args, **kwargs)
       return lambda: self._process_step(action, *future())
@@ -491,7 +510,7 @@ class ExternalProcess(object):
   """Step environment in a separate process for lock free paralellism."""
 
   # Message types for communication via the pipe.
-  _ACCESS = 1
+  _ACCESS = 1   # for getting a non-existing attribute
   _CALL = 2
   _RESULT = 3
   _EXCEPTION = 4
@@ -512,10 +531,10 @@ class ExternalProcess(object):
       observation_space: The cached observation space of the environment.
       action_space: The cached action space of the environment.
     """
-    self._conn, conn = multiprocessing.Pipe()
+    self._conn, conn = multiprocessing.Pipe()  # 2 connections. self._conn for parent process, conn for child process.
     self._process = multiprocessing.Process(
-        target=self._worker, args=(constructor, conn))
-    atexit.register(self.close)
+        target=self._worker, args=(constructor, conn))   # child process
+    atexit.register(self.close)   # self.close() is automatically executed upon normal interpreter termination.
     self._process.start()
     self._observ_space = None
     self._action_space = None
@@ -532,7 +551,7 @@ class ExternalProcess(object):
       self._action_space = self.__getattr__('action_space')
     return self._action_space
 
-  def __getattr__(self, name):
+  def __getattr__(self, name):  # when getting a non-existing attribute
     """Request an attribute from the environment.
 
     Note that this involves communication with the external process, so it can
@@ -566,11 +585,11 @@ class ExternalProcess(object):
     """Send a close message to the external process and join it."""
     try:
       self._conn.send((self._CLOSE, None))
-      self._conn.close()
+      self._conn.close()  # close the connection.
     except IOError:
       # The connection was already closed.
       pass
-    self._process.join()
+    self._process.join()      # the parent process is blocked until self._process is done.
 
   def step(self, action, blocking=True):
     """Step the environment.
@@ -583,7 +602,7 @@ class ExternalProcess(object):
       Transition tuple when blocking, otherwise callable that returns the
       transition tuple.
     """
-    promise = self.call('step', action)
+    promise = self.call('step', action)  # self._receive is returned.
     if blocking:
       return promise()
     else:
@@ -615,7 +634,7 @@ class ExternalProcess(object):
     Returns:
       Payload object of the message.
     """
-    message, payload = self._conn.recv()
+    message, payload = self._conn.recv()    # Blocks until there is something to receive.
     # Re-raise exceptions in the main process.
     if message == self._EXCEPTION:
       stacktrace = payload
@@ -624,7 +643,7 @@ class ExternalProcess(object):
       return payload
     raise KeyError('Received message of unexpected type {}'.format(message))
 
-  def _worker(self, constructor, conn):
+  def _worker(self, constructor, conn):  # A new process is created.
     """The process waits for actions and sends back environment results.
 
     Args:
@@ -636,8 +655,10 @@ class ExternalProcess(object):
     """
     try:
       env = constructor()
-      while True:
+      while True:         # env main loop
         try:
+          # env.render()    # for breakout
+
           # Only block for short times to have keyboard exceptions be raised.
           if not conn.poll(0.1):
             continue
