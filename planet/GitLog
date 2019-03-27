@@ -50,6 +50,13 @@ add new _read_episodes_scan() for fixed max_episodes
 
 ==================================================================
 
-2019/3/ ,11:35 git commit
+2019/3/28 ,23:35 git commit
 
 what's new:
+
+!1. planet/envs/carla/env.py
+ @set_timeout(10)
+ def _reset(self):
+
+ @set_timeout(10)
+ def _step(self):

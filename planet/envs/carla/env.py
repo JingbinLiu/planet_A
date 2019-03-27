@@ -36,14 +36,14 @@ if CARLA_OUT_PATH and not os.path.exists(CARLA_OUT_PATH):
 
 # Set this to the path of your Carla binary
 SERVER_BINARY = os.environ.get("CARLA_SERVER",
-                               os.path.expanduser("~/carla8/CarlaUE4.sh"))  # /home/kychen/projects/carla/CarlaUE4.sh
+                               os.path.expanduser("/data/carla8/CarlaUE4.sh"))     # the carla8 engine
 
 assert os.path.exists(SERVER_BINARY)
 if "CARLA_PY_PATH" in os.environ:
     sys.path.append(os.path.expanduser(os.environ["CARLA_PY_PATH"]))
 else:
     # TODO(ekl) switch this to the binary path once the planner is in master
-    sys.path.append(os.path.expanduser("~/carla8/PythonClient/"))  # /home/kychen/projects/carla/PythonClient/
+    sys.path.append(os.path.expanduser("/data/carla8/PythonClient/"))             # the carla8 python API
 
 try:
     from carla.client import CarlaClient, VehicleControl
@@ -120,6 +120,25 @@ DISCRETE_ACTIONS = {
     # brake right
     8: [-0.5, 0.5],
 }
+
+
+# timeout decorator
+def set_timeout(seconds):
+    def wrap(func):
+        def handle(signum, frame):  # 收到信号 SIGALRM 后的回调函数，第一个参数是信号的数字，第二个参数是the interrupted stack frame.
+            raise RuntimeError
+        def to_do(*args, **kwargs):
+            signal.signal(signal.SIGALRM, handle)  # 设置信号和回调函数
+            signal.alarm(seconds)  # 设置 timeout 秒的闹钟
+            # print('start alarm signal.')
+            r = func(*args, **kwargs)
+            # print('close alarm signal.')
+            signal.alarm(0)  # 关闭闹钟
+            return r
+        return to_do
+    return wrap
+
+
 
 live_carla_processes = set()  # Carla Server
 
@@ -259,6 +278,7 @@ class CarlaEnv(gym.Env):
                 error = e
         raise error
 
+    @set_timeout(10)
     def _reset(self):
         self.num_steps = 0
         self.total_reward = 0
@@ -405,6 +425,7 @@ class CarlaEnv(gym.Env):
 
 
     # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output
+    @set_timeout(10)
     def _step(self, action):
         if self.config["discrete_actions"]:
             action = DISCRETE_ACTIONS[int(action)]  # Carla action is 2D.
@@ -670,6 +691,8 @@ class CarlaEnv(gym.Env):
 
         assert observation is not None, sensor_data
         return observation, py_measurements
+
+
 
 
 def compute_reward_corl2017(env, prev, current):
