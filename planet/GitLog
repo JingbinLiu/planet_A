@@ -1,0 +1,49 @@
+
+
+2019/3/27,11:35 git commit -am ''
+
+what's new:
+
+1. planet/__init__.py
+TASK_NAME = "{tasks: [carla]}"
+
+2. planet/control/wrappers.py
+class LimitDuration(object):
+new schemes for early stop when done is True.
+
+3. planet/control/wrappers.py
+class ExternalProcess(object):
+resending step for carla
+
+!4. planet/control/wrappers.py
++# create only one env process when Instantiate class ExternalProcess.
++class ExternalProcess(object):
+
+!5. planet/envs/carla/env.py
+-            return (self.last_obs, 0.0, True, {})
++            return (self.last_obs, 0.0, 'step_error', {})
+
+!6. planet/scripts/configs.py
+-  config.train_steps = int(params.get('train_steps', 50000))
++  config.train_steps = int(params.get('train_steps', 500))  # train_steps for each epoch
+
+-      sim.steps_after = params.get('collect_every', 5000)
+-      sim.steps_every = params.get('collect_every', 5000)
++      sim.steps_after = params.get('collect_every', 50)    # sim after 5000 steps
++      sim.steps_every = params.get('collect_every', 50)    # sim every 5000 steps
+
+7. planet/scripts/tasks.py
++  # state_components = ['reward', 'state']
++  state_components = ['reward']
+
+!8. planet/tools/numpy_episodes.py
+-  train = train.shuffle(100 * shape[0])
++  train = train.shuffle(10 * shape[0])    # This dataset fills a buffer with buffer_size elements
+-  test = test.shuffle(100 * shape[0])
++  test = test.shuffle(10 * shape[0])   # downscale the buffer size 100 --> 10.
+
+!9. planet/tools/numpy_episodes.py
+add new _read_episodes_scan() for fixed max_episodes
+
+
+

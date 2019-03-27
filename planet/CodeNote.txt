@@ -139,3 +139,15 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
                             high = {np.uint8: 255, np.float: 1.0}[self._dtype]
                             image = gym.spaces.Box(0, high, self._size + (3,), dtype=self._dtype)
                             ...
+
+
+改动：
+config.train_steps = int(params.get('train_steps', 500))  # train_steps for each epoch
+sim.steps_after = params.get('collect_every', 50)    # sim after 5000 steps
+sim.steps_every = params.get('collect_every', 50)    # sim every 5000 steps
+
+_read_episodes_scan（）函数
+'step_error'异常处理
+
+###
+把buffersize改成50，结合_read_episodes_scan（max_episodes=100）函数看训练效果以及cpu内存占用.对比原来的_read_episodes_scan函数和buffersize。

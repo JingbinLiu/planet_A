@@ -150,7 +150,7 @@ def train(model_fn, datasets, logdir, config):
     Test score of every epoch.
 
   Raises:
-    KeyError: if config is falsey.
+    KeyError: if config is False.
   """
   if not config:
     raise KeyError('You must specify a configuration.')

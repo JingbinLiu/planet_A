@@ -67,14 +67,14 @@ def numpy_episodes(
         sequence['image'] = preprocess_fn(sequence['image'])
     return sequence
   train = train.flat_map(chunking)         # train.flat_map(lambda x: tf.data.Dataset.from_tensor_slices(x)), x has shape(num_chunks, chunk_length,64,64,3).
-  train = train.shuffle(100 * shape[0])
+  train = train.shuffle(10 * shape[0])    # This dataset fills a buffer with buffer_size elements
   train = train.batch(shape[0], drop_remainder=True)
   train = train.map(sequence_preprocess_fn, 10).prefetch(20)    # dataset.map( map_func, num_parallel_calls=None )
   test = test.flat_map(chunking)
-  test = test.shuffle(100 * shape[0])
+  test = test.shuffle(10 * shape[0])   # downscale the buffer size 100 --> 10.
   test = test.batch(shape[0], drop_remainder=True)
   test = test.map(sequence_preprocess_fn, 10).prefetch(20)
-  return attr_dict.AttrDict(train=train, test=test)
+  return attr_dict.AttrDict(train=train, test=test)   # e.g. train = <PrefetchDataset shapes: { image: (13(batchsize), 50(chunk_length), 64, 64, 3), action: (13, 50, 1), ...}, types: {state: tf.float32, image: tf.float32, action: tf.float32, reward: tf.float32, length: tf.int32}>
 
 ''' return dtypes and shapes of episodes. '''
 def _read_spec(directory, return_length=False, numpy_types=False, **kwargs):
@@ -110,7 +110,7 @@ def _read_episodes_scan0(
       if index > every:
         break
     # At the end of the epoch, add new episodes to the cache.
-    print(index, len(recent), max_episodes, len(cache))
+    # print(index, len(recent), max_episodes, len(cache))
     cache.update(recent)
     recent = {}
     filenames = tf.gfile.Glob(os.path.join(directory, '*.npz'))
@@ -140,32 +140,55 @@ def _read_episodes_scan(
         break
 
     # At the end of the epoch, add new episodes to the cache.
-    max_episodes = 100
+    max_episodes = 200
 
     recent = {}
     filenames = tf.gfile.Glob(os.path.join(directory, '*.npz'))
 
-    # some probability for reloading cache.
-    if np.random.random() > 0.9:
-      filenames_old = {}
 
+    # scheme 1: cache is fixed, but can be updated by recent episode.
     filenames = [filename for filename in filenames if filename not in filenames_old]    # filenames_old is a dict. list is  time-consuming...
     for filename in filenames:
       filenames_old[filename]=filename
-
 
     for filename in filenames:
       recent[filename] = _read_episode(filename, **kwargs)
       if len(recent) == max_episodes:
         break
-    print(index, len(recent), max_episodes, len(cache), len(filenames_old))
+    #print(index, len(recent), max_episodes, len(cache), len(filenames_old))
 
     if max_episodes - len(cache) < len(recent):
       for _ in range(len(recent)-(max_episodes - len(cache))):
         cache.popitem()
         print('after pop:', len(recent), max_episodes, len(cache), len(filenames_old))
+
     cache.update(recent)
 
+
+
+    # # scheme 2: some probability for reloading cache.
+    # if np.random.random() > 0.9:
+    #   filenames_old = {}
+    #
+    # filenames = [filename for filename in filenames if filename not in filenames_old]    # filenames_old is a dict. list is  time-consuming...
+    # for filename in filenames:
+    #   filenames_old[filename]=filename
+    #
+    # for filename in filenames:
+    #   recent[filename] = _read_episode(filename, **kwargs)
+    #   if len(recent) == max_episodes:
+    #     break
+    # #print(index, len(recent), max_episodes, len(cache), len(filenames_old))
+    #
+    # # some probability for reloading cache.
+    # if len(recent) == max_episodes:
+    #   cache = recent
+    # elif max_episodes - len(cache) < len(recent):
+    #   for _ in range(len(recent)-(max_episodes - len(cache))):
+    #     cache.popitem()
+    #     print('after pop:', len(recent), max_episodes, len(cache), len(filenames_old))
+    #
+    #   cache.update(recent)
 
 
 

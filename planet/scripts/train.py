@@ -56,7 +56,7 @@ from planet import training
 from planet.scripts import configs
 
 from planet import LOGDIR
-
+from planet import TASK_NAME
 
 ''' 'start' and 'resume' return config for training.'''
 def start(logdir, args):            # 'logpath/00001'
@@ -84,13 +84,13 @@ def process(logdir, config, args):
       config.train_dir, config.test_dir, config.batch_shape,
       loader=config.data_loader,
       preprocess_fn=config.preprocess_fn,
-      scan_every=config.scan_episodes_every,
-      num_chunks=config.num_chunks,
+      scan_every=config.scan_episodes_every,         # after scan_every step, add new episodes to the cache.
+      num_chunks=config.num_chunks,                  # number of chunks from one episode. e.g. 2(num_chunks) * 50(chunk_length) < 111(episode length)
       resize=config.resize,
       sub_sample=config.sub_sample,
-      max_length=config.max_length,
-      max_episodes=config.max_episodes,
-      action_noise=config.fixed_action_noise)
+      max_length=config.max_length,                  # max_length of episodes when reading saved episodes.
+      max_episodes=config.max_episodes,              # max_episodes for cache.
+      action_noise=config.fixed_action_noise)        # whether add action noise when reading saved episodes.
   for score in training.utility.train(
       training.define_model, dataset, logdir, config):
     yield score
@@ -122,7 +122,7 @@ if __name__ == '__main__':
       '--config', default='default',
       help='Select a configuration function from scripts/configs.py.')
   parser.add_argument(
-      '--params', default="{tasks: [breakout]}", type=str,   # pendulum carla breakout
+      '--params', default=TASK_NAME, type=str,   # "{tasks: [carla]}" # pendulum carla breakout
       help='YAML formatted dictionary to be used by the config.')
   parser.add_argument(
       '--ping_every', type=int, default=0,

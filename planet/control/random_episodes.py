@@ -20,7 +20,7 @@ from planet.control import wrappers
 
 
 def random_episodes(env_ctor, num_episodes, output_dir=None):
-  env = env_ctor()
+  env = env_ctor()  # env is an <ExternalProcess object>.
   env = wrappers.CollectGymDataset(env, output_dir)
   episodes = []
   for _ in range(num_episodes):

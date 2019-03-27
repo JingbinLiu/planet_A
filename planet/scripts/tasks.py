@@ -231,7 +231,7 @@ class DeepMindWrapper_gym_atari(object):
     obs = {'state':np.array([0.0])}
     # obs = {}
 
-    return obs, reward, done, {}     # done can be set to always False.
+    return obs, reward, False, {}     # done can be set to always False.
 
   def reset(self):
     s_img = self._env.reset()
