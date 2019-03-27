@@ -124,18 +124,18 @@ from __future__ import print_function
 
 
 # TASK_NAME = "{tasks: [carla]}"
-# IMG_SIZE = (64, 64)
-# EPISODE_LEN = 60
+# IMG_SIZE = (128, 128)
+# EPISODE_LEN = 100
 # REPEATE = 1
 # BATCHSIZE = 50
 # REWARD_FUNC = 'custom3'
 # USE_SENSOR = 'use_rgb'
 # NUM_CHANNELS = 3
-# LOGDIR = './carla_debug_test'
+# LOGDIR = './carla_128_h3'
 
 
 TASK_NAME = "{tasks: [breakout]}"
-IMG_SIZE = (64, 64)
+IMG_SIZE = (128, 128)
 EPISODE_LEN = 100
 REPEATE = 1
 BATCHSIZE = 50
