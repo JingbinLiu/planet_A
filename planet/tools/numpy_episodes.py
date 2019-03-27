@@ -67,7 +67,7 @@ def numpy_episodes(
         sequence['image'] = preprocess_fn(sequence['image'])
     return sequence
   train = train.flat_map(chunking)         # train.flat_map(lambda x: tf.data.Dataset.from_tensor_slices(x)), x has shape(num_chunks, chunk_length,64,64,3).
-  train = train.shuffle(10 * shape[0])    # This dataset fills a buffer with buffer_size elements
+  train = train.shuffle(100 * shape[0])    # This dataset fills a buffer with buffer_size elements
   train = train.batch(shape[0], drop_remainder=True)
   train = train.map(sequence_preprocess_fn, 10).prefetch(20)    # dataset.map( map_func, num_parallel_calls=None )
   test = test.flat_map(chunking)
@@ -93,7 +93,7 @@ def _read_spec(directory, return_length=False, numpy_types=False, **kwargs):
     return dtypes, shapes
 
 ''' use episodes already saved and new episodes updated in the training process. '''
-def _read_episodes_scan0(
+def _read_episodes_scan(
     directory, batch_size, every, max_episodes=None, **kwargs):
   recent = {}
   cache = {}
@@ -121,7 +121,7 @@ def _read_episodes_scan0(
       recent[filename] = _read_episode(filename, **kwargs)
 
 
-def _read_episodes_scan(
+def _read_episodes_scan0(
     directory, batch_size, every, max_episodes=None, **kwargs):
   recent = {}
   cache = {}
@@ -140,7 +140,7 @@ def _read_episodes_scan(
         break
 
     # At the end of the epoch, add new episodes to the cache.
-    max_episodes = 200
+    max_episodes = 300
 
     recent = {}
     filenames = tf.gfile.Glob(os.path.join(directory, '*.npz'))
@@ -166,8 +166,8 @@ def _read_episodes_scan(
 
 
 
-    # # scheme 2: some probability for reloading cache.
-    # if np.random.random() > 0.9:
+    # # scheme 2: some probability for reloading cache.  ### time consuming ... do not use it!
+    # if np.random.random() > 0.95:
     #   filenames_old = {}
     #
     # filenames = [filename for filename in filenames if filename not in filenames_old]    # filenames_old is a dict. list is  time-consuming...

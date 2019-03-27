@@ -123,18 +123,7 @@ from __future__ import print_function
 # LOGDIR = './carla_debug_log'
 
 
-# TASK_NAME = "{tasks: [carla]}"
-# IMG_SIZE = (128, 128)
-# EPISODE_LEN = 100
-# REPEATE = 1
-# BATCHSIZE = 50
-# REWARD_FUNC = 'custom3'
-# USE_SENSOR = 'use_rgb'
-# NUM_CHANNELS = 3
-# LOGDIR = './carla_128_h3'
-
-
-TASK_NAME = "{tasks: [breakout]}"
+TASK_NAME = "{tasks: [carla]}"
 IMG_SIZE = (128, 128)
 EPISODE_LEN = 100
 REPEATE = 1
@@ -142,4 +131,15 @@ BATCHSIZE = 50
 REWARD_FUNC = 'custom3'
 USE_SENSOR = 'use_rgb'
 NUM_CHANNELS = 3
-LOGDIR = './debug_log_breakout'
+LOGDIR = '~/Data/planet/carla_128_h3'
+
+
+# TASK_NAME = "{tasks: [breakout]}"
+# IMG_SIZE = (128, 128)
+# EPISODE_LEN = 100
+# REPEATE = 1
+# BATCHSIZE = 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# LOGDIR = '~/Data/planet/breakout_128_h3'
