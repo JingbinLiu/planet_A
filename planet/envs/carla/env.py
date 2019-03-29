@@ -278,7 +278,7 @@ class CarlaEnv(gym.Env):
                 error = e
         raise error
 
-    @set_timeout(10)
+    # @set_timeout(15)
     def _reset(self):
         self.num_steps = 0
         self.total_reward = 0
@@ -425,7 +425,7 @@ class CarlaEnv(gym.Env):
 
 
     # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output
-    @set_timeout(10)
+    # @set_timeout(10)
     def _step(self, action):
         if self.config["discrete_actions"]:
             action = DISCRETE_ACTIONS[int(action)]  # Carla action is 2D.

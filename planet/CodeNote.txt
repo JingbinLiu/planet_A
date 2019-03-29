@@ -64,7 +64,7 @@ class Run(object):
                 score, summary = model_fn(data, trainer, config)         #  model_fn is training.define_model.
                 trainer.add_phase(...)
                 trainer.add_phase(...)
-                for score in trainer.iterate(config.max_steps):
+                for score in trainer.iterate(config.max_steps):          # iterating...
                     yield score
 
                 # planet/training/trainer.py

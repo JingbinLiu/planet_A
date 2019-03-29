@@ -38,8 +38,12 @@ setuptools.setup(
      'scipy',
      'tensorflow-gpu==1.12.0',
      'tensorflow_probability==0.5.0',
+     'opencv-python',
+     'pygame',
     ],
-    packages=setuptools.find_packages(),
+    # install packages (planet) in the project planet_A.
+    # If not installed, use $ export PYTHONPATH=/home/liu/Projects/planet_A:$PYTHONPATH; CUDA_VISIBLE_DEVICES=0 python planet/scripts/train.py
+    # packages=setuptools.find_packages(),
     classifiers=[
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',

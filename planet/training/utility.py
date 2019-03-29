@@ -94,7 +94,7 @@ def load_config(logdir):
     raise IOError(message)
   try:
     with tf.gfile.GFile(config_path, 'r') as file_:
-      config = yaml.load(file_, yaml.Loader)
+      config = yaml.load(file_, yaml.Loader)               # not successful
       message = 'Resume run and write summaries and checkpoints to {}.'
       tf.logging.info(message.format(config.logdir))
   except Exception:
@@ -141,7 +141,7 @@ def train(model_fn, datasets, logdir, config):
   `max_steps`, in addition to the attributes expected by the model function.
 
   Args:
-    model_fn: Function greating the model graph.
+    model_fn: Function creating the model graph.
     datasets: Dictionary with keys `train` and `test` and datasets as values.
     logdir: Optional logging directory for summaries and checkpoints.
     config: Configuration object.

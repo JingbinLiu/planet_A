@@ -167,7 +167,7 @@ def _read_episodes_scan0(
 
 
     # # scheme 2: some probability for reloading cache.  ### time consuming ... do not use it!
-    # if np.random.random() > 0.95:
+    # if np.random.random() > 0.95:  # tf.random.normal(shape=())
     #   filenames_old = {}
     #
     # filenames = [filename for filename in filenames if filename not in filenames_old]    # filenames_old is a dict. list is  time-consuming...

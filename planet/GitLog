@@ -37,13 +37,13 @@ resending step for carla
 +  # state_components = ['reward', 'state']
 +  state_components = ['reward']
 
-!8. planet/tools/numpy_episodes.py
+8. planet/tools/numpy_episodes.py
 -  train = train.shuffle(100 * shape[0])
 +  train = train.shuffle(10 * shape[0])    # This dataset fills a buffer with buffer_size elements
 -  test = test.shuffle(100 * shape[0])
 +  test = test.shuffle(10 * shape[0])   # downscale the buffer size 100 --> 10.
 
-!9. planet/tools/numpy_episodes.py
+9. planet/tools/numpy_episodes.py
 add new _read_episodes_scan() for fixed max_episodes
 
 
@@ -55,7 +55,7 @@ add new _read_episodes_scan() for fixed max_episodes
 what's new:
 
 !1. planet/envs/carla/env.py
- @set_timeout(10)
+ @set_timeout(15)
  def _reset(self):
 
  @set_timeout(10)
