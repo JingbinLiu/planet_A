@@ -47,12 +47,12 @@ class RSSM(base.Base):
   def __init__(
       self, state_size, belief_size, embed_size, mean_only=False,
       min_stddev=1e-5):
-    self._state_size = state_size
-    self._belief_size = belief_size
-    self._embed_size = embed_size
-    self._transition_tpl = tf.make_template('transition', self._transition)
+    self._state_size = state_size   # 30
+    self._belief_size = belief_size # 200
+    self._embed_size = embed_size   # 200
+    self._transition_tpl = tf.make_template('transition', self._transition)  # tpl: template
     self._posterior_tpl = tf.make_template('posterior', self._posterior)
-    self._cell = tf.contrib.rnn.GRUBlockCell(self._belief_size)
+    self._cell = tf.contrib.rnn.GRUBlockCell(self._belief_size)                # Deprecated: use GRUBlockCellV2 instead.
     self._kwargs = dict(units=self._embed_size, activation=tf.nn.relu)
     self._mean_only = mean_only
     self._min_stddev = min_stddev
@@ -90,11 +90,12 @@ class RSSM(base.Base):
 
   def _transition(self, prev_state, prev_action, zero_obs):
     """Compute prior next state by applying the transition dynamics."""
-    inputs = tf.concat([prev_state['sample'], prev_action], -1)
-    hidden = tf.layers.dense(inputs, **self._kwargs)
-    belief, rnn_state = self._cell(hidden, prev_state['rnn_state'])
+    inputs = tf.concat([prev_state['sample'], prev_action], -1)    # [s_t-1, a_t-1]  # shape(40,30+2)
+    hidden = tf.layers.dense(inputs, **self._kwargs)               # embedding.      # shape(40,200)
+    belief, rnn_state = self._cell(hidden, prev_state['rnn_state']) # p( h_t | h_t-1, [s_t-1, a_t-1] )  # shape(40,200), shape(40,200)
+    # hidden = belief                                               # not using rnn_state???
     hidden = tf.layers.dense(hidden, **self._kwargs)
-    mean = tf.layers.dense(hidden, self._state_size, None)
+    mean = tf.layers.dense(hidden, self._state_size, None)         # shape(40,30)
     stddev = tf.layers.dense(hidden, self._state_size, tf.nn.softplus)
     stddev += self._min_stddev
     if self._mean_only:
@@ -109,7 +110,7 @@ class RSSM(base.Base):
         'rnn_state': rnn_state,
     }
 
-  def _posterior(self, prev_state, prev_action, obs):
+  def _posterior(self, prev_state, prev_action, obs):              # q(s_t | s_t-1, a_t-1, o_t)
     """Compute posterior state from previous state and current observation."""
     prior = self._transition_tpl(prev_state, prev_action, tf.zeros_like(obs))
     inputs = tf.concat([prior['belief'], obs], -1)

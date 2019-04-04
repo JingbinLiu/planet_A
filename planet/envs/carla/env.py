@@ -421,7 +421,7 @@ class CarlaEnv(gym.Env):
             print("Error during step, terminating episode early",
                   traceback.format_exc())
             self.clear_server_state()
-            return (self.last_obs, 0.0, 'step_error', {})
+            return (self.last_obs, 0.0, True, {})
 
 
     # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output
@@ -853,7 +853,8 @@ def compute_reward_custom3(env, prev, current):
 
     # Speed reward, up 30.0 (km/h)
     # reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
-    reward += np.clip(current["forward_speed"]*3.6, 0.0, 30.0) / 10  # 3.6km/h = 1m/s
+    # reward += np.clip(current["forward_speed"]*3.6, 0.0, 30.0) / 10  # 3.6km/h = 1m/s
+    reward += np.where(current["forward_speed"]*3.6 < 30.0, current["forward_speed"]*3.6/10, -0.3*current["forward_speed"]*3.6+12.0)
     # New collision damage
     new_damage = (
         current["collision_vehicles"] + current["collision_pedestrians"] +

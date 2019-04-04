@@ -64,13 +64,13 @@ class Run(object):
                 score, summary = model_fn(data, trainer, config)         #  model_fn is training.define_model.
                 trainer.add_phase(...)
                 trainer.add_phase(...)
-                for score in trainer.iterate(config.max_steps):          # iterating...
+                for score in trainer.iterate(config.max_steps):          # training...
                     yield score
 
                 # planet/training/trainer.py
                 class Trainer(object):
                     def iterate(self, max_step=None, sess=None):
-                        while True:   # MAIN LOOP
+                        while True:                                      # TRAINING LOOP
                             global_step = sess.run(self._global_step)
                             if max_step and global_step >= max_step:
                                 break

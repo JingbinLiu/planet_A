@@ -102,7 +102,7 @@ def load_config(logdir):
   return config
 
 
-def get_batch(datasets, phase, reset):
+def get_batch(datasets, phase, reset):  # datasets = {'train': <PrefetchDataset shapes: {state: (50, 50, 1), image: (50, 50, 64, 64, 3), action: (50, 50, 2), reward: (50, 50), length: (50,)}, types: {state: tf.float32, image: tf.float32, action: tf.float32, reward: tf.float32, length: tf.int32}>, 'test': <PrefetchDataset shapes: {state: (50, 50, 1), image: (50, 50, 64, 64, 3), action: (50, 50, 2), reward: (50, 50), length: (50,)}, types: {state: tf.float32, image: tf.float32, action: tf.float32, reward: tf.float32, length: tf.int32}>}
   """Read batches from multiple datasets based on the training phase.
 
   The test dataset is reset at the beginning of every test phase. The training
@@ -117,12 +117,12 @@ def get_batch(datasets, phase, reset):
     data: a batch of data from either the train or test set.
   """
   with datasets.unlocked:
-    datasets.train = datasets.train.make_one_shot_iterator()
+    datasets.train = datasets.train.make_one_shot_iterator()   # Creates an Iterator for enumerating the elements of this dataset.
     datasets.test = datasets.test.make_one_shot_iterator()
   data = tf.cond(
       tf.equal(phase, 'train'),
-      datasets.train.get_next,
-      datasets.test.get_next)
+      datasets.train.get_next,  # tf.cond( pred, true_fn=None, false_fn=None, ...)
+      datasets.test.get_next)   #　Return true_fn() if the predicate pred is true else false_fn()
   if not isinstance(data, dict):
     data = {'data': data}
   if 'length' not in data:
@@ -161,7 +161,7 @@ def train(model_fn, datasets, logdir, config):
     config = save_config(config, logdir)
   trainer = trainer_.Trainer(logdir, config=config)
   with tf.variable_scope('graph', use_resource=True):
-    data = get_batch(datasets, trainer.phase, trainer.reset)
+    data = get_batch(datasets, trainer.phase, trainer.reset) # {'state': <tf.Tensor 'graph/cond_3/Merge_4:0' shape=(50, 50, 1) dtype=float32>, 'image': <tf.Tensor 'graph/cond_3/Merge_1:0' shape=(50, 50, 64, 64, 3) dtype=float32>, 'action': <tf.Tensor 'graph/cond_3/Merge:0' shape=(50, 50, 2) dtype=float32>, 'reward': <tf.Tensor 'graph/cond_3/Merge_3:0' shape=(50, 50) dtype=float32>, 'length': <tf.Tensor 'graph/cond_3/Merge_2:0' shape=(50,) dtype=int32>}
     score, summary = model_fn(data, trainer, config)         # model_fn is training.define_model
     message = 'Graph contains {} trainable variables.'
     tf.logging.info(message.format(tools.count_weights()))
@@ -188,7 +188,7 @@ def train(model_fn, datasets, logdir, config):
 def compute_losses(
     loss_scales, cell, heads, step, target, prior, posterior, mask,
     free_nats=None, debug=False):
-  features = cell.features_from_state(posterior)
+  features = cell.features_from_state(posterior)      # [s,h]
   losses = {}
   for key, scale in loss_scales.items():
     # Skip losses with zero or None scale to save computation.

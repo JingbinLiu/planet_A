@@ -43,8 +43,8 @@ class Base(tf.nn.rnn_cell.RNNCell):
         lambda size: tf.zeros([batch_size, size], dtype),
         self.state_size)
 
-  def call(self, inputs, prev_state):
-    obs, prev_action, use_obs = inputs
+  def call(self, inputs, prev_state):         # implement call with the signature (output, next_state) = call(input, state)
+    obs, prev_action, use_obs = inputs        # rnn inputs: (embedded, prev_action, use_obs)
     if self.__debug:
       with tf.control_dependencies([tf.assert_equal(use_obs, use_obs[0, 0])]):
         use_obs = tf.identity(use_obs)

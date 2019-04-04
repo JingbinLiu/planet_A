@@ -29,7 +29,7 @@ def define_model(data, trainer, config):
   tf.logging.info('Build TensorFlow compute graph.')
   dependencies = []
   step = trainer.step
-  global_step = trainer.global_step
+  global_step = trainer.global_step  # tf.train.get_or_create_global_step()
   phase = trainer.phase
   should_summarize = trainer.log
 
@@ -39,7 +39,7 @@ def define_model(data, trainer, config):
       data['action'] += tf.random_normal(
           tf.shape(data['action']), 0.0, config.dynamic_action_noise)
     prev_action = tf.concat(
-        [0 * data['action'][:, :1], data['action'][:, :-1]], 1)
+        [0 * data['action'][:, :1], data['action'][:, :-1]], 1)   # i.e.: (0 * a1, a1, a2, ..., a49)
     obs = data.copy()
     del obs['length']
 
@@ -49,13 +49,13 @@ def define_model(data, trainer, config):
   encoder = tf.make_template(
       'encoder', config.encoder, create_scope_now_=True, **kwargs)
   heads = {}
-  for key, head in config.heads.items():
+  for key, head in config.heads.items():   # heads: network of 'image', 'reward', 'state'
     name = 'head_{}'.format(key)
     kwargs = dict(data_shape=obs[key].shape[2:].as_list())
     heads[key] = tf.make_template(name, head, create_scope_now_=True, **kwargs)
 
   # Embed observations and unroll model.
-  embedded = encoder(obs)
+  embedded = encoder(obs)     # encode obs['image']
   # Separate overshooting and zero step observations because computing
   # overshooting targets for images would be expensive.
   zero_step_obs = {}
@@ -66,8 +66,8 @@ def define_model(data, trainer, config):
     if config.overshooting_losses.get(key):
       overshooting_obs[key] = value
   assert config.overshooting <= config.batch_shape[1]
-  target, prior, posterior, mask = tools.overshooting(
-      cell, overshooting_obs, embedded, prev_action, data['length'],
+  target, prior, posterior, mask = tools.overshooting(                         #  prior:{'mean':shape(40,50,51,30), ...}; posterior:{'mean':shape(40,50,51,30), ...}
+      cell, overshooting_obs, embedded, prev_action, data['length'],           #  target:{'reward':shape(40,50,51), ...}; mask:shape(40,50,51)
       config.overshooting + 1)
   losses = []
 
