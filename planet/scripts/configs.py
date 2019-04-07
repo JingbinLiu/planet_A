@@ -136,7 +136,7 @@ def _loss_functions(config, params):
 def _training_schedule(config, params):
   config.train_steps = int(params.get('train_steps', 50000))  # train_steps for each epoch
   config.test_steps = int(params.get('test_steps', 100))      # test_steps for each epoch
-  config.max_steps = int(params.get('max_steps', 2e7))        # steps for each run
+  config.max_steps = int(params.get('max_steps', 2e9))        # steps for each run
   config.train_log_every = config.train_steps
   config.train_checkpoint_every = None
   config.test_checkpoint_every = int(

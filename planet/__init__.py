@@ -127,11 +127,12 @@ TASK_NAME = "{tasks: [carla]}"
 IMG_SIZE = (64, 64)
 EPISODE_LEN = 100
 REPEATE = 1
-BATCHSIZE = 40
+BATCHSIZE = 50
 REWARD_FUNC = 'custom3'
 USE_SENSOR = 'use_rgb'
 NUM_CHANNELS = 3
-LOGDIR = '~/Data/planet/carla_64'
+SCENARIO = 'TOWN2_WEATHER_NPC'
+LOGDIR = '~/Data/planet/carla_64_v1'
 
 
 # TASK_NAME = "{tasks: [breakout]}"

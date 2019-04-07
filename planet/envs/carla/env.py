@@ -25,9 +25,12 @@ except Exception:
 import gym
 from gym.spaces import Box, Discrete, Tuple
 
-from planet import REWARD_FUNC, IMG_SIZE,  USE_SENSOR
+from planet import REWARD_FUNC, IMG_SIZE,  USE_SENSOR, SCENARIO
 
-from .scenarios import DEFAULT_SCENARIO, LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
+exec('from .scenarios import '+ SCENARIO + ' as SCENARIO')
+
+# from .scenarios import TOWN2_NPC, TOWN2_WEATHER, TOWN2_WEATHER_NPC,\
+#     LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
 
 # Set this where you want to save image outputs (or empty string to disable)
 CARLA_OUT_PATH = os.environ.get("CARLA_OUT", os.path.expanduser("~/carla_out"))
@@ -94,7 +97,7 @@ ENV_CONFIG = {
     "x_res": 64,  # cv2.resize()
     "y_res": 64,  # cv2.resize()
     "server_map": "/Game/Maps/Town02",
-    "scenarios": TOWN2_ONE_CURVE_STRAIGHT_NAV, # TOWN2_ONE_CURVE_0, #TOWN2_STRAIGHT_0, # TOWN2_STRAIGHT_DYNAMIC_0, #  [DEFAULT_SCENARIO], # [LANE_KEEP], #  TOWN2_ONE_CURVE, #    TOWN2_ALL, #
+    "scenarios": SCENARIO,
     "use_sensor": USE_SENSOR,
     "discrete_actions": False,
     "squash_action_logits": False,
@@ -984,12 +987,17 @@ if __name__ == "__main__":
         done = False
         i = 0
         total_reward = 0.0
-        while not done:
+        while True:
             i += 1
             if ENV_CONFIG["discrete_actions"]:
                 obs, reward, done, info = env.step(3)
             else:
-                obs, reward, done, info = env.step([1, 1])
+                obs, reward, done, info = env.step([0.5, 0])
             total_reward += reward
-            print(i, "rew", reward, "total", total_reward, "done", done)
+            print(i, "reward", reward, "total", total_reward, "done", done)
+
+            if i>100:
+                env.reset()
+                i = 0
+
         print("{} fps".format(i / (time.time() - start)))
