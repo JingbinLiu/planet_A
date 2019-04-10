@@ -432,9 +432,16 @@ class CollectGymDataset(object):
     else:
       episode = self._get_episode()
       info['episode'] = episode
+      acc_reward = sum(episode['reward'])
       if self.step_error:
-        print('step error... the episode will NOT be saved.')
+        print('step error... this episode will NOT be saved.')
+
+      # control data collection...
+      elif acc_reward > 0.0:
+        print('accumulative reward({}) > 0.0... this episode will NOT be saved.'.format(acc_reward))
+
       elif self._outdir:
+        print('accumulative reward({}) <= 0.0... this episode will be saved.'.format(acc_reward))
         filename = self._get_filename()
         #print('writing ......................................')
         self._write(episode, filename)   #

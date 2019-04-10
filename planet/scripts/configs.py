@@ -27,7 +27,7 @@ from planet import models
 from planet import networks
 from planet import tools
 from planet.scripts import tasks as tasks_lib
-from planet import BATCHSIZE
+from planet import BATCHSIZE, CHUNK_LEN
 
 # with config.unlocked:
 def default(config, params):   # config={}, params = {'tasks': ['breakout'], 'logdir': './log_testing/00001'}
@@ -59,7 +59,7 @@ def _data_processing(config, params):
   config.max_episodes = None
   config.scan_episodes_every = params.get('scan_episodes_every', 10)
   config.data_loader = params.get('data_loader', 'scan')
-  config.batch_shape = params.get('batch_shape', (BATCHSIZE, 50))
+  config.batch_shape = params.get('batch_shape', (BATCHSIZE, CHUNK_LEN))
   config.num_chunks = params.get('num_chunks', 1)
   image_bits = params.get('image_bits', 8)
   config.preprocess_fn = functools.partial(
@@ -136,7 +136,7 @@ def _loss_functions(config, params):
 def _training_schedule(config, params):
   config.train_steps = int(params.get('train_steps', 50000))  # train_steps for each epoch
   config.test_steps = int(params.get('test_steps', 100))      # test_steps for each epoch
-  config.max_steps = int(params.get('max_steps', 2e9))        # steps for each run
+  config.max_steps = int(params.get('max_steps', 2e8))        # steps for each run
   config.train_log_every = config.train_steps
   config.train_checkpoint_every = None
   config.test_checkpoint_every = int(

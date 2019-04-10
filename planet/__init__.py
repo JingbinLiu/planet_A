@@ -127,20 +127,34 @@ TASK_NAME = "{tasks: [carla]}"
 IMG_SIZE = (64, 64)
 EPISODE_LEN = 100
 REPEATE = 1
-BATCHSIZE = 50
+BATCHSIZE, CHUNK_LEN = 50, 50
 REWARD_FUNC = 'custom3'
 USE_SENSOR = 'use_rgb'
 NUM_CHANNELS = 3
-SCENARIO = 'TOWN2_WEATHER_NPC'
-LOGDIR = '~/Data/planet/carla_64_v1'
+SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' #  'TOWN2_WEATHER_NPC'  #
+LOGDIR = '~/Data/planet/carla_64_reward0.0'
 
 
-# TASK_NAME = "{tasks: [breakout]}"
+# TASK_NAME = "{tasks: [carla]}"
 # IMG_SIZE = (128, 128)
 # EPISODE_LEN = 100
 # REPEATE = 1
-# BATCHSIZE = 50
+# BATCHSIZE, CHUNK_LEN = 30, 30
 # REWARD_FUNC = 'custom3'
 # USE_SENSOR = 'use_rgb'
 # NUM_CHANNELS = 3
-# LOGDIR = '~/Data/planet/breakout_128_h3'
+# SCENARIO = 'TOWN2_WEATHER'  # 'TOWN2_ONE_CURVE_STRAIGHT_NAV' #  'TOWN2_WEATHER_NPC'  #
+# LOGDIR = '~/Data/planet/carla_128_h3_30_30_WEATHER'
+
+
+# TASK_NAME = "{tasks: [carla]}"
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN = 100
+# REPEATE = 1
+# BATCHSIZE, CHUNK_LEN = 30, 30
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV'
+# LOGDIR = '~/Data/planet/debug_carla'
+
