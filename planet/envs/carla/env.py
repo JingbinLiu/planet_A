@@ -462,6 +462,8 @@ class CarlaEnv(gym.Env):
         image, py_measurements = self._read_observation()
         if self.config["verbose"]:
             print("Next command", py_measurements["next_command"])
+        print("Next command", py_measurements["next_command"])
+
         if type(action) is np.ndarray:
             py_measurements["action"] = [float(a) for a in action]
         else:
@@ -621,15 +623,11 @@ class CarlaEnv(gym.Env):
 
         if self.config["enable_planner"]:
             next_command = COMMANDS_ENUM[self.planner.get_next_command(
-                [cur.transform.location.x, cur.transform.location.y, GROUND_Z],
-                [
-                    cur.transform.orientation.x, cur.transform.orientation.y,
-                    GROUND_Z
-                ],
-                [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z], [
-                    self.end_pos.orientation.x, self.end_pos.orientation.y,
-                    GROUND_Z
-                ])]
+                [cur.transform.location.x, cur.transform.location.y, GROUND_Z],\
+                [cur.transform.orientation.x, cur.transform.orientation.y,GROUND_Z],\
+                [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z],\
+                [self.end_pos.orientation.x, self.end_pos.orientation.y,GROUND_Z]\
+                )]
         else:
             next_command = "LANE_FOLLOW"
 
@@ -979,25 +977,41 @@ def collided_done(py_measurements):
 
 
 if __name__ == "__main__":
-    for _ in range(2):
-        env = CarlaEnv()
-        obs = env.reset()
-        print("reset", obs)
-        start = time.time()
-        done = False
-        i = 0
-        total_reward = 0.0
-        while True:
-            i += 1
-            if ENV_CONFIG["discrete_actions"]:
-                obs, reward, done, info = env.step(3)
+
+    env = CarlaEnv()
+    obs = env.reset()
+    print("reset")
+    start = time.time()
+    done = False
+    i = 0
+    total_reward = 0.0
+    while True:
+        i += 1
+        if ENV_CONFIG["discrete_actions"]:
+            obs, reward, done, info = env.step(3)
+        else:
+
+            # command from keyboard.
+            commd = input('input command:')    # type (str)
+            if commd == 'a':
+                steer_commd = 1
+            elif commd=='d':
+                steer_commd = -1
             else:
-                obs, reward, done, info = env.step([0.5, 0])
-            total_reward += reward
-            print(i, "reward", reward, "total", total_reward, "done", done)
+                steer_commd = 0
 
-            if i>100:
-                env.reset()
-                i = 0
+            obs, reward, done, info = env.step([0.5, steer_commd])
 
-        print("{} fps".format(i / (time.time() - start)))
+        total_reward += reward
+        print(i, "reward", reward, "total", total_reward, "done", done)
+
+        if i > 100:
+            env.reset()
+            i = 0
+            total_reward = 0.0
+
+    # print("{} fps".format(i / (time.time() - start)))
+
+
+
+
