@@ -62,6 +62,55 @@ class Run(object):
                 trainer = trainer_.Trainer(logdir, config=config)        #  trainer_ is trainer.py
                 data = get_batch(datasets, trainer.phase, trainer.reset)
                 score, summary = model_fn(data, trainer, config)         #  model_fn is training.define_model.
+                    # planet/training/define_model.py
+                    def define_model(data, trainer, config):
+                        ...
+                        collect_summary, _ = tf.cond(should_collect, functools.partial(utility.simulate_episodes, config, params, graph, name), ...)
+                            # planet/training/utility.py
+                            def simulate_episodes(config, params, graph, name):
+                                def env_ctor():
+                                    env = params.task.env_ctor()
+                                    if params.save_episode_dir:
+                                    env = control.wrappers.CollectGymDataset(env, params.save_episode_dir)
+                                    env = control.wrappers.ConcatObservation(env, ['image'])
+                                    return env
+                                for index in range(params.batch_size):   # params.batch_size = 1  #####################
+                                    summary, return_ = control.simulate(graph.step, env_ctor, params.task.max_length, 1, agent_config, name=name)
+                                        # I. planet/control/simulate.py
+                                        def simulate(step, env_ctor, duration, num_agents, agent_config, env_processes=False, name='simulate'):
+                                            return_, image, action, reward = collect_rollouts(step=step, env_ctor=env_ctor, duration=duration, num_agents=num_agents, agent_config=agent_config, env_processes=env_processes )
+                                            # II.
+                                            def collect_rollouts(step, env_ctor, duration, num_agents, agent_config, env_processes):
+                                                batch_env = define_batch_env(env_ctor, num_agents, env_processes)
+                                                    # IIa.
+                                                    def define_batch_env(env_ctor, num_agents, env_processes):
+                                                        env = batch_env.BatchEnv(envs, blocking=not env_processes)
+                                                        env = in_graph_batch_env.InGraphBatchEnv(env)
+                                                        return env
+                                                agent = mpc_agent.MPCAgent(batch_env, step, False, False, agent_config)
+                                                def simulate_fn(unused_last, step):
+                                                    done, score, unused_summary = simulate_step( batch_env, agent, log=False, reset=tf.equal(step, 0))
+                                                done, score, image, action, reward = tf.scan( simulate_fn, tf.range(duration), initializer, parallel_iterations=1)
+                                                # III.
+                                                def simulate_step()
+                                                    ...
+                                                    _define_step()
+                                                    # IV.
+                                                    def _define_step():
+                                                        action, step_summary = algo.perform(agent_indices, prevob)    # algo = agent
+
+                                                            # planet_A/planet/control/mpc_agent.py
+                                                            class MPCAgent(object):
+                                                                ...
+                                                                def perform(self, agent_indices, observ):
+                                                                    action = self._config.planner(self._cell, self._config.objective, state,embedded.shape[1:].as_list(),prev_action.shape[1:].as_list())
+                                                                        # planet_A/planet/scripts/configs.py
+                                                                        def _define_simulation():
+                                                                            planner = functools.partial(control.planning.cross_entropy_method, ...)
+
+
+
+
                 trainer.add_phase(...)
                 trainer.add_phase(...)
                 for score in trainer.iterate(config.max_steps):          # training...

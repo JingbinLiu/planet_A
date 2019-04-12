@@ -34,7 +34,7 @@ import tensorflow as tf
 
 from planet.tools import nested
 
-from planet import NUM_CHANNELS
+from planet import NUM_CHANNELS, COLLECT_EPISODE
 
 num_channels_x = NUM_CHANNELS
 
@@ -437,11 +437,11 @@ class CollectGymDataset(object):
         print('step error... this episode will NOT be saved.')
 
       # control data collection...
-      elif acc_reward > 0.0:
-        print('accumulative reward({}) > 0.0... this episode will NOT be saved.'.format(acc_reward))
+      elif acc_reward > COLLECT_EPISODE:
+        print('accumulative reward({}) > {}... this episode will NOT be saved.'.format(acc_reward,COLLECT_EPISODE))
 
       elif self._outdir:
-        print('accumulative reward({}) <= 0.0... this episode will be saved.'.format(acc_reward))
+        print('accumulative reward({}) <= {}... this episode will be saved.'.format(acc_reward,COLLECT_EPISODE))
         filename = self._get_filename()
         #print('writing ......................................')
         self._write(episode, filename)   #

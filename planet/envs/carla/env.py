@@ -398,7 +398,7 @@ class CarlaEnv(gym.Env):
         # Process observations: self._read_observation() returns image and py_measurements.
         image, py_measurements = self._read_observation()
         self.prev_measurement = py_measurements
-        return self.encode_obs(self.preprocess_image(image), py_measurements)
+        return self.encode_obs(self.preprocess_image(image), py_measurements), py_measurements
 
     def encode_obs(self, image, py_measurements):
         assert self.config["framestack"] in [1, 2]
@@ -678,6 +678,7 @@ class CarlaEnv(gym.Env):
             "num_pedestrians": self.scenario["num_pedestrians"],
             "max_steps": self.scenario["max_steps"],
             "next_command": next_command,
+            "next_command_id": COMMAND_ORDINAL[next_command],
         }
 
         if CARLA_OUT_PATH and self.config["log_images"]:

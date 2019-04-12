@@ -301,11 +301,12 @@ class DeepMindWrapper_carla(object):
     self.img, reward, done, info = self._env.step(action)
     # print(self.img)
     obs = {'state':np.array([0.0])}
-    return obs, reward, done, {}
+    return obs, reward, done, {'next_command_id': info['next_command_id']}
 
   def reset(self):
-    self.img = self._env.reset()
-    return {'state':np.array([0.0])}
+    self.img, info = self._env.reset()
+    obs = {'state':np.array([0.0])}
+    return obs
 
   def render(self, *args, **kwargs):
     if kwargs.get('mode', 'rgb_array') != 'rgb_array':
@@ -322,7 +323,7 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
   def env_ctor():
     env = CarlaEnv()
     env = DeepMindWrapper_carla(env, img_size)
-    env = control.wrappers.ActionRepeat(env, action_repeat)    # reward: sum the rewards of each action
+    env = control.wrappers.ActionRepeat(env, action_repeat)    # reward: sum the rewards of each repeated action
     env = control.wrappers.LimitDuration(env, max_length)
     # PixelObservations: add image to obs for env.render()
     env = control.wrappers.PixelObservations(env, img_size, np.float64 if USE_SENSOR in ['use_depth','use_logdepth'] else np.uint8, 'image')
