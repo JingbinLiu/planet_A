@@ -992,16 +992,18 @@ if __name__ == "__main__":
             obs, reward, done, info = env.step(3)
         else:
 
-            # command from keyboard.
-            commd = input('input command:')    # type (str)
-            if commd == 'a':
-                steer_commd = 1
-            elif commd=='d':
-                steer_commd = -1
-            else:
-                steer_commd = 0
+            # # command from keyboard.
+            # commd = input('input command:')    # type (str)
+            # if commd == 'a':
+            #     steer_commd = 1
+            # elif commd=='d':
+            #     steer_commd = -1
+            # else:
+            #     steer_commd = 0
+            # obs, reward, done, info = env.step([0.5, steer_commd])
 
-            obs, reward, done, info = env.step([0.5, steer_commd])
+            # fixed command.
+            obs, reward, done, info = env.step([0.5, 0.0])
 
         total_reward += reward
         print(i, "reward", reward, "total", total_reward, "done", done)
