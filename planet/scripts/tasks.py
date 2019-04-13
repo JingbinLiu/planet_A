@@ -301,8 +301,8 @@ class DeepMindWrapper_carla(object):
     self.img, reward, done, info = self._env.step(action)
     # print(self.img)
     obs = {'state':np.array([0.0])}
-    # return obs, reward, done, {'next_command_id': info['next_command_id']}
-    return obs, reward, done, {}
+    return obs, reward, done, {'next_command_id': info['next_command_id']}
+    # return obs, reward, done, {}
 
 
   def reset(self):

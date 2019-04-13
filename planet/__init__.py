@@ -123,38 +123,38 @@ from __future__ import print_function
 # LOGDIR = './carla_debug_log'
 
 
-TASK_NAME = "{tasks: [carla]}"
-IMG_SIZE = (64, 64)
-EPISODE_LEN, COLLECT_EPISODE = 100, 0.0
-REPEATE = 1
-BATCHSIZE, CHUNK_LEN = 50, 50
-REWARD_FUNC = 'custom3'
-USE_SENSOR = 'use_rgb'
-NUM_CHANNELS = 3
-SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' #  'TOWN2_WEATHER_NPC'  #
-LOGDIR = '~/Data/planet/carla_64_reward0.0'
+# TASK_NAME = "{tasks: [carla]}"
+# IMG_SIZE = (64, 64)
+# EPISODE_LEN, COLLECT_EPISODE = 100, 0.0
+# RREPEATE, NUM_SEED = 1, 5
+# BATCHSIZE, CHUNK_LEN = 50, 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' #  'TOWN2_WEATHER_NPC'  #
+# LOGDIR = '~/Data/planet/carla_64_reward0.0'
 
 
 # TASK_NAME = "{tasks: [carla]}"
 # IMG_SIZE = (128, 128)
 # EPISODE_LEN, COLLECT_EPISODE = 100, 0.0
-# REPEATE = 1
-# BATCHSIZE, CHUNK_LEN = 30, 30
+# REPEATE, NUM_SEED = 1, 5
+# BATCHSIZE, CHUNK_LEN = 50, 50
 # REWARD_FUNC = 'custom3'
 # USE_SENSOR = 'use_rgb'
 # NUM_CHANNELS = 3
-# SCENARIO = 'TOWN2_WEATHER'  # 'TOWN2_ONE_CURVE_STRAIGHT_NAV' #  'TOWN2_WEATHER_NPC'  #
-# LOGDIR = '~/Data/planet/carla_128_h3_30_30_WEATHER'
+# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
+# LOGDIR = '~/Data/planet/carla_128_h3_speedlimit'
 
 
-# TASK_NAME = "{tasks: [carla]}"
-# IMG_SIZE = (64, 64)
-# EPISODE_LEN, COLLECT_EPISODE = 100, 300.0   # collect data when accumulative reward < COLLECT_EPISODE.
-# REPEATE = 1
-# BATCHSIZE, CHUNK_LEN = 10, 30
-# REWARD_FUNC = 'custom3'
-# USE_SENSOR = 'use_rgb'
-# NUM_CHANNELS = 3
-# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV'
-# LOGDIR = '~/Data/planet/debug_carla'
+TASK_NAME = "{tasks: [carla]}"
+IMG_SIZE = (64, 64)
+EPISODE_LEN, COLLECT_EPISODE = 100, 300.0   # collect data when accumulative reward < COLLECT_EPISODE.
+REPEATE, NUM_SEED = 1, 1
+BATCHSIZE, CHUNK_LEN = 10, 30
+REWARD_FUNC = 'custom3'
+USE_SENSOR = 'use_rgb'
+NUM_CHANNELS = 3
+SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV'
+LOGDIR = '~/Data/planet/debug_carla'
 

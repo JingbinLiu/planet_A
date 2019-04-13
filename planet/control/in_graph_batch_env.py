@@ -58,6 +58,10 @@ class InGraphBatchEnv(object):
       self._done = tf.get_variable(
           'done', batch_dims, tf.int32,
           tf.constant_initializer(False), trainable=False)
+      self._info = tf.get_variable(
+          'info_cmd', batch_dims, tf.float32,
+          tf.constant_initializer(0), trainable=False)      # for carla, info is the driving command.
+
 
   def __getattr__(self, name):
     """Forward unimplemented attributes to one of the original environments.
@@ -91,14 +95,15 @@ class InGraphBatchEnv(object):
     """
     with tf.name_scope('environment/simulate'):
       observ_dtype = self._parse_dtype(self._batch_env.observation_space)
-      observ, reward, done = tf.py_func(
-          lambda a: self._batch_env.step(a)[:3], [action],
-          [observ_dtype, tf.float32, tf.bool], name='step')
+      observ, reward, done, info = tf.py_func(                                  # tf.py_func(): Wraps a python function and uses it as a TensorFlow op.
+          lambda a: self._batch_env.step(a)[:4], [action],                      #  batch_env.step(): interact with the env.
+          [observ_dtype, tf.float32, tf.bool, tf.float32], name='step')
       return tf.group(
           self._observ.assign(observ),
           self._action.assign(action),
-          self._reward.assign(reward),
-          self._done.assign(tf.to_int32(done)))
+          self._reward.assign(reward),     # shape(num_env=1,)
+          self._done.assign(tf.to_int32(done)),
+          self._info.assign(info))     # for carla, info is the driving command.
 
   def reset(self, indices=None):
     """Reset the batch of environments.
@@ -141,6 +146,11 @@ class InGraphBatchEnv(object):
   def done(self):
     """Access the variable indicating whether the episode is done."""
     return tf.cast(self._done, tf.bool)
+
+  @property
+  def info_cmd(self):
+    """Access the variable holding the info."""
+    return self._info + 0
 
   def close(self):
     """Send close messages to the external process and join them."""

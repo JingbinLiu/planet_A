@@ -26,7 +26,7 @@ from planet.control import in_graph_batch_env
 from planet.control import mpc_agent
 from planet.control import wrappers
 from planet.tools import streaming_mean
-
+import numpy as np
 
 def simulate(
     step, env_ctor, duration, num_agents, agent_config,
@@ -91,8 +91,18 @@ def define_batch_env(env_ctor, num_agents, env_processes):
           for _ in range(num_agents)]
     else:
       envs = [env_ctor() for _ in range(num_agents)]
+
     env = batch_env.BatchEnv(envs, blocking=not env_processes)
+    # # For testing the wrapper class BatchEnv:
+    # env.reset()
+    # env.step(np.array([[0.5,0.5]]))
+
     env = in_graph_batch_env.InGraphBatchEnv(env)
+    # # For testing the wrapper class BatchEnv:
+    # env.reset()
+    # env.step(np.array([[0.5,0.5]]))
+
+
   return env
 
 
@@ -144,9 +154,9 @@ def simulate_step(batch_env, algo, log=True, reset=False):
     """
     prevob = batch_env.observ + 0  # Ensure a copy of the variable value.
     agent_indices = tf.range(len(batch_env))
-    action, step_summary = algo.perform(agent_indices, prevob)
+    action, step_summary = algo.perform(agent_indices, prevob)                 # get action from the planner.
     action.set_shape(batch_env.action.shape)
-    with tf.control_dependencies([batch_env.step(action)]):
+    with tf.control_dependencies([batch_env.step(action)]):                    # interact with the env.
       add_score = score_var.assign_add(batch_env.reward)
       inc_length = length_var.assign_add(tf.ones(len(batch_env), tf.int32))
     with tf.control_dependencies([add_score, inc_length]):

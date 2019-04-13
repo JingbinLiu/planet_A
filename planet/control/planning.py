@@ -24,11 +24,11 @@ from planet import tools
 
 
 def cross_entropy_method(
-    cell, objective_fn, state, obs_shape, action_shape, horizon,
+    cell, objective_fn, state, info_cmd, obs_shape, action_shape, horizon,
     amount=1000, topk=100, iterations=10, discount=0.99,
-    min_action=-1, max_action=1):
+    min_action=-1, max_action=1):       # state,info_cmd: shape(num_envs,...)
   obs_shape, action_shape = tuple(obs_shape), tuple(action_shape)
-  original_batch = tools.shape(tools.nested.flatten(state)[0])[0]
+  original_batch = tools.shape(tools.nested.flatten(state)[0])[0]    # original_batch: num_envs
   initial_state = tools.nested.map(lambda tensor: tf.tile(
       tensor, [amount] + [1] * (tensor.shape.ndims - 1)), state)
   extended_batch = tools.shape(tools.nested.flatten(initial_state)[0])[0]
@@ -59,8 +59,26 @@ def cross_entropy_method(
     stddev = tf.sqrt(variance + 1e-6)
     return mean, stddev
 
-  mean = tf.zeros((original_batch, horizon) + action_shape)
+
+  '''COMMAND_ORDINAL = {
+    "REACH_GOAL": 0,
+    "GO_STRAIGHT": 1,
+    "TURN_RIGHT": 2,
+    "TURN_LEFT": 3,
+    "LANE_FOLLOW": 4 }
+  '''
+  # compute action_bias
+  f_0 = lambda: tf.constant([0.0, 0.0])
+  f_1eft = lambda: tf.constant([0.0, -0.5])
+  f_right = lambda: tf.constant([0.0, 0.5])
+  info_cmd = tf.squeeze(info_cmd)
+  pred_func = { tf.equal(info_cmd,3):f_1eft, tf.equal(info_cmd,2):f_right }
+  action_bias = tf.case(pred_func, default=f_0)
+
+
+  mean = tf.zeros((original_batch, horizon) + action_shape) + action_bias
   stddev = tf.ones((original_batch, horizon) + action_shape)
+
   mean, stddev = tf.scan(
       iteration, tf.range(iterations), (mean, stddev), back_prop=False)
   mean, stddev = mean[-1], stddev[-1]  # Select belief at last iterations.

@@ -27,7 +27,7 @@ from planet import models
 from planet import networks
 from planet import tools
 from planet.scripts import tasks as tasks_lib
-from planet import BATCHSIZE, CHUNK_LEN
+from planet import BATCHSIZE, CHUNK_LEN, NUM_SEED
 
 # with config.unlocked:
 def default(config, params):   # config={}, params = {'tasks': ['breakout'], 'logdir': './log_testing/00001'}
@@ -179,7 +179,7 @@ def _define_optimizers(config, params):
 
 
 def _initial_collection(config, params):
-  num_seed_episodes = params.get('num_seed_episodes', 5)   # 5 initial random episodes
+  num_seed_episodes = params.get('num_seed_episodes', NUM_SEED)   # 5 initial random episodes
   sims = tools.AttrDict(_unlocked=True)
   for task in config.tasks:
     sims['train-' + task.name] = tools.AttrDict(

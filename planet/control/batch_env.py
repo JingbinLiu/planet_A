@@ -90,11 +90,12 @@ class BatchEnv(object):
           for env, action in zip(self._envs, actions)]
       transitions = [transition() for transition in transitions]
     observs, rewards, dones, infos = zip(*transitions)
-    observ = np.stack(observs)
-    reward = np.stack(rewards)
-    done = np.stack(dones)
-    info = tuple(infos)
-    return observ, reward, done, info
+    observ = np.stack(observs)        # observs: (shape(64,64,3),); observ: shape(1,64,64,3)
+    reward = np.stack(rewards)        # rewards: (shape(),); reward: shape(1,)
+    done = np.stack(dones)            # dones: (bool,); done: shape(1,dtype=bool)
+    info = tuple(infos)               # infos: <class 'tuple'>: ({'next_command_id': 4},)
+    info_cmd = np.array([dict_i['next_command_id'] for dict_i in info]).astype(np.float32)            # for carla, info is the driving command.
+    return observ, reward, done, info_cmd
 
   def reset(self, indices=None):
     """Reset the environment and convert the resulting observation.

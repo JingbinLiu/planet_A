@@ -97,8 +97,9 @@ class Run(object):
                                                     _define_step()
                                                     # IV.
                                                     def _define_step():
-                                                        action, step_summary = algo.perform(agent_indices, prevob)    # algo = agent
-
+                                                        action, step_summary = algo.perform(agent_indices, prevob)    # get action from the planner.(algo = agent.)
+                                                        with tf.control_dependencies([batch_env.step(action)]):       # interact with the env.
+                                                            ...
                                                             # planet_A/planet/control/mpc_agent.py
                                                             class MPCAgent(object):
                                                                 ...

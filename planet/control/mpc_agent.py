@@ -31,7 +31,7 @@ class MPCAgent(object):
     self._should_log = should_log
     self._config = config
     self._cell = config.cell
-    state = self._cell.zero_state(len(batch_env), tf.float32)
+    state = self._cell.zero_state(len(batch_env), tf.float32)  # self._cell.zero_state(batch_size=num_envs, dtype)
     var_like = lambda x: tf.get_local_variable(
         x.name.split(':')[0].replace('/', '_') + '_var',
         shape=x.shape,
@@ -41,6 +41,7 @@ class MPCAgent(object):
         'prev_action_var', shape=self._batch_env.action.shape,
         initializer=lambda *_, **__: tf.zeros_like(self._batch_env.action),
         use_resource=True)
+    self._info_cmd = batch_env.info_cmd
 
   def begin_episode(self, agent_indices):
     state = nested.map(
@@ -65,7 +66,7 @@ class MPCAgent(object):
       use_obs = tf.ones(tf.shape(agent_indices), tf.bool)[:, None]
       _, state = self._cell((embedded, prev_action, use_obs), state)
     action = self._config.planner(
-        self._cell, self._config.objective, state,
+        self._cell, self._config.objective, state, self._info_cmd,
         embedded.shape[1:].as_list(),
         prev_action.shape[1:].as_list())
     action = action[:, 0]
