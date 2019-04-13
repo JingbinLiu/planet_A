@@ -68,7 +68,7 @@ def cross_entropy_method(
     "LANE_FOLLOW": 4 }
   '''
   # compute action_bias
-  f_0 = lambda: tf.constant([0.0, 0.0])
+  f_0 = lambda: tf.constant([0.0, 0.0])    # [throttle, steer(l-,r+)]
   f_1eft = lambda: tf.constant([0.0, -0.5])
   f_right = lambda: tf.constant([0.0, 0.5])
   info_cmd = tf.squeeze(info_cmd)

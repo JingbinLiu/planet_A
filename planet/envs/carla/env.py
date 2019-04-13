@@ -995,9 +995,9 @@ if __name__ == "__main__":
             # # command from keyboard.
             # commd = input('input command:')    # type (str)
             # if commd == 'a':
-            #     steer_commd = 1
-            # elif commd=='d':
             #     steer_commd = -1
+            # elif commd=='d':
+            #     steer_commd = 1
             # else:
             #     steer_commd = 0
             # obs, reward, done, info = env.step([0.5, steer_commd])
