@@ -88,7 +88,7 @@ ENV_CONFIG = {
     "convert_images_to_video": False,  # convert log_images to videos. when "verbose" is True.
     "verbose": False,    # print measurement information; write out measurement json file.
 
-    "enable_planner": False,
+    "enable_planner": True,
     "framestack": 1,  # note: only [1, 2] currently supported
     "early_terminate_on_collision": True,
     "reward_function": REWARD_FUNC,

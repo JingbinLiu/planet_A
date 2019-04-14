@@ -41,7 +41,7 @@ class MPCAgent(object):
         'prev_action_var', shape=self._batch_env.action.shape,
         initializer=lambda *_, **__: tf.zeros_like(self._batch_env.action),
         use_resource=True)
-    self._info_cmd = batch_env.info_cmd
+    self._info_cmd = batch_env._info   #    batch_env.info_cmd  #
 
   def begin_episode(self, agent_indices):
     state = nested.map(

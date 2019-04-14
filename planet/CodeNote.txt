@@ -87,7 +87,7 @@ class Run(object):
                                                         env = batch_env.BatchEnv(envs, blocking=not env_processes)
                                                         env = in_graph_batch_env.InGraphBatchEnv(env)
                                                         return env
-                                                agent = mpc_agent.MPCAgent(batch_env, step, False, False, agent_config)
+                                                age nt = mpc_agent.MPCAgent(batch_env, step, False, False, agent_config)
                                                 def simulate_fn(unused_last, step):
                                                     done, score, unused_summary = simulate_step( batch_env, agent, log=False, reset=tf.equal(step, 0))
                                                 done, score, image, action, reward = tf.scan( simulate_fn, tf.range(duration), initializer, parallel_iterations=1)
@@ -109,9 +109,6 @@ class Run(object):
                                                                         def _define_simulation():
                                                                             planner = functools.partial(control.planning.cross_entropy_method, ...)
 
-
-
-
                 trainer.add_phase(...)
                 trainer.add_phase(...)
                 for score in trainer.iterate(config.max_steps):          # training...
@@ -120,17 +117,23 @@ class Run(object):
                 # planet/training/trainer.py
                 class Trainer(object):
                     def iterate(self, max_step=None, sess=None):
-                        while True:                                      # TRAINING LOOP
-                            global_step = sess.run(self._global_step)
-                            if max_step and global_step >= max_step:
-                                break
-                            summary, mean_score, global_step = sess.run(phase.op, phase.feed)
-                            if self._is_every_steps(phase_step, phase.batch_size, phase.report_every):
-                                tf.logging.info('Score {}.'.format(mean_score))
-                                yield mean_score
+                        sess = sess or self._create_session()
+                        with sess:
+                            while True:                                      # TRAINING LOOP
+                                global_step = sess.run(self._global_step)
+                                if max_step and global_step >= max_step:
+                                    break
+                                summary, mean_score, global_step = sess.run(phase.op, phase.feed)
+                                if self._is_every_steps(phase_step, phase.batch_size, phase.report_every):
+                                    tf.logging.info('Score {}.'.format(mean_score))
+                                    yield mean_score
 
 
 
+env._info
+<tf.Variable 'graph/collection/simulate-1/train-carla-cem-12/environments/env_temporary/info_cmd:0' shape=(1,) dtype=float32>
+env.info_cmd
+Tensor("graph/collection/should_collect_carla/simulate-1/train-carla-cem-12/add_8:0", shape=(1,), dtype=float32)
 
 env.py
 ENV_CONFIG = {
