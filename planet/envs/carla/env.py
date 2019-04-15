@@ -424,7 +424,7 @@ class CarlaEnv(gym.Env):
             print("Error during step, terminating episode early",
                   traceback.format_exc())
             self.clear_server_state()
-            return (self.last_obs, 0.0, True, {})
+            return (self.last_obs, 0.0, True, self.prev_measurement)
 
 
     # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output

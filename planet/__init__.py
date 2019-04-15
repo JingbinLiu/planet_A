@@ -136,15 +136,15 @@ from __future__ import print_function
 
 
 TASK_NAME = "{tasks: [carla]}"
-IMG_SIZE = (128, 128)
-EPISODE_LEN, COLLECT_EPISODE = 500, 300000.0
+IMG_SIZE = (64, 64)
+EPISODE_LEN, COLLECT_EPISODE = 400, 300000.0
 REPEATE, NUM_SEED = 1, 5
 BATCHSIZE, CHUNK_LEN = 50, 50
 REWARD_FUNC = 'custom3'
 USE_SENSOR = 'use_rgb'
 NUM_CHANNELS = 3
 SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
-LOGDIR = '~/Data/planet/carla_128_500'
+LOGDIR = '~/Data/planet/carla_64_400'
 
 
 # TASK_NAME = "{tasks: [carla]}"
