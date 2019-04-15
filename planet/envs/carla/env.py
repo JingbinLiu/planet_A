@@ -156,7 +156,8 @@ atexit.register(cleanup)
 
 
 class CarlaEnv(gym.Env):
-    def __init__(self, config=ENV_CONFIG):
+    def __init__(self, config=ENV_CONFIG, enable_autopilot = False):
+        self.enable_autopilot = enable_autopilot
         self.config = config
         self.config["x_res"], self.config["y_res"] = IMG_SIZE
         self.city = self.config["server_map"].split("/")[-1]
@@ -363,7 +364,7 @@ class CarlaEnv(gym.Env):
 
         # Setup start and end positions
         scene = self.client.load_settings(settings)
-        positions = scene.player_start_spots
+        self.positions = positions = scene.player_start_spots
         self.start_pos = positions[self.scenario["start_pos_id"]]
         self.end_pos = positions[self.scenario["end_pos_id"]]
         self.start_coord = [
@@ -451,12 +452,15 @@ class CarlaEnv(gym.Env):
             print("steer", steer, "throttle", throttle, "brake", brake,
                   "reverse", reverse)
 
-        self.client.send_control(
-            steer=steer,
-            throttle=throttle,
-            brake=brake,
-            hand_brake=hand_brake,
-            reverse=reverse)
+        if self.enable_autopilot:
+            self.client.send_control(self.autopilot)
+        else:
+            self.client.send_control(
+                steer=steer,
+                throttle=throttle,
+                brake=brake,
+                hand_brake=hand_brake,
+                reverse=reverse)
 
         # Process observations: self._read_observation() returns image and py_measurements.
         image, py_measurements = self._read_observation()
@@ -590,6 +594,9 @@ class CarlaEnv(gym.Env):
         # Read the data produced by the server this frame.
         measurements, sensor_data = self.client.read_data()
 
+        if self.enable_autopilot:
+            self.autopilot = measurements.player_measurements.autopilot_control
+
         # Print some of the measurements.
         if self.config["verbose"]:
             print_measurements(measurements)
@@ -633,6 +640,7 @@ class CarlaEnv(gym.Env):
 
         if next_command == "REACH_GOAL":
             distance_to_goal = 0.0  # avoids crash in planner
+            self.end_pos = self.positions[random.choice(self.config["scenarios"])['end_pos_id']]
         elif self.config["enable_planner"]:
             distance_to_goal = self.planner.get_shortest_path_distance([
                 cur.transform.location.x, cur.transform.location.y, GROUND_Z
@@ -979,7 +987,7 @@ def collided_done(py_measurements):
 
 if __name__ == "__main__":
 
-    env = CarlaEnv()
+    env = CarlaEnv(enable_autopilot=True)
     obs = env.reset()
     print("reset")
     start = time.time()
@@ -1008,13 +1016,9 @@ if __name__ == "__main__":
         total_reward += reward
         print(i, "reward", reward, "total", total_reward, "done", done)
 
-        if i > 100:
+        if i > 10000:
             env.reset()
             i = 0
             total_reward = 0.0
 
     # print("{} fps".format(i / (time.time() - start)))
-
-
-
-
