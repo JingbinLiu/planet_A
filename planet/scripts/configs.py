@@ -27,7 +27,7 @@ from planet import models
 from planet import networks
 from planet import tools
 from planet.scripts import tasks as tasks_lib
-from planet import BATCHSIZE, CHUNK_LEN, NUM_SEED
+from planet import BATCHSIZE, CHUNK_LEN, NUM_SEED, H_SIZE, S_SIZE
 
 # with config.unlocked:
 def default(config, params):   # config={}, params = {'tasks': ['breakout'], 'logdir': './log_testing/00001'}
@@ -75,8 +75,8 @@ def _model_components(config, params):
   config.encoder = network.encoder
   config.decoder = network.decoder
   config.heads = tools.AttrDict(image=config.decoder)
-  size = params.get('model_size', 200)
-  state_size = params.get('state_size', 30)
+  size = params.get('model_size', H_SIZE)
+  state_size = params.get('state_size', S_SIZE)
   model = params.get('model', 'rssm')
   if model == 'ssm':
     config.cell = functools.partial(
