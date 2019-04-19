@@ -431,9 +431,14 @@ class CarlaEnv(gym.Env):
     # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output
     # @set_timeout(10)
     def _step(self, action):
+
         if self.config["discrete_actions"]:
             action = DISCRETE_ACTIONS[int(action)]  # Carla action is 2D.
         assert len(action) == 2, "Invalid action {}".format(action)
+
+        if self.enable_autopilot:
+            action[0] = self.autopilot.brake if self.autopilot.brake < 0 else self.autopilot.throttle
+            action[1] = self.autopilot.steer
         if self.config["squash_action_logits"]:
             forward = 2 * float(sigmoid(action[0]) - 0.5)
             throttle = float(np.clip(forward, 0, 1))
@@ -452,15 +457,13 @@ class CarlaEnv(gym.Env):
             print("steer", steer, "throttle", throttle, "brake", brake,
                   "reverse", reverse)
 
-        if self.enable_autopilot:
-            self.client.send_control(self.autopilot)
-        else:
-            self.client.send_control(
-                steer=steer,
-                throttle=throttle,
-                brake=brake,
-                hand_brake=hand_brake,
-                reverse=reverse)
+
+        self.client.send_control(
+            steer=steer,
+            throttle=throttle,
+            brake=brake,
+            hand_brake=hand_brake,
+            reverse=reverse)
 
         # Process observations: self._read_observation() returns image and py_measurements.
         image, py_measurements = self._read_observation()
@@ -813,7 +816,7 @@ def compute_reward_custom1(env, prev, current):
     return reward
 
 
-def compute_reward_custom2(env, prev, current):
+def compute_reward_custom4(env, prev, current):
     reward = 0.0
 
     # cur_dist = current["distance_to_goal"]
@@ -826,8 +829,9 @@ def compute_reward_custom2(env, prev, current):
     # reward += 0.5 * np.clip(prev_dist - cur_dist, -12.0, 12.0)
 
     # Speed reward, up 30.0 (km/h)
-    reward += current["forward_speed"]/ 10.0
-
+    # reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
+    # reward += np.clip(current["forward_speed"]*3.6, 0.0, 30.0) / 10  # 3.6km/h = 1m/s
+    reward += np.where(current["forward_speed"]*3.6 < 40.0, current["forward_speed"]*3.6/10, -0.4*current["forward_speed"]*3.6+20.0)
     # New collision damage
     new_damage = (
         current["collision_vehicles"] + current["collision_pedestrians"] +
@@ -836,16 +840,16 @@ def compute_reward_custom2(env, prev, current):
     # print(current["collision_other"], current["collision_vehicles"], current["collision_pedestrians"])
     # 0.0 41168.109375 0.0
     if new_damage:
-        reward -= 100.0
+        reward -= 300.0
 
     # Sidewalk intersection [0, 1]
-    reward -= 10 * current["intersection_offroad"]
+    reward -= 6 * (current["forward_speed"]+1.0) * current["intersection_offroad"]
     # print(current["intersection_offroad"])
     # Opposite lane intersection
-    reward -= 4 * current["intersection_otherlane"]  # [0 ~ 1]
-
+    reward -= 3 * (current["forward_speed"]+1.0) * current["intersection_otherlane"]  # [0 ~ 1]
 
     return reward
+
 
 
 
@@ -942,7 +946,7 @@ REWARD_FUNCTIONS = {
     "corl2017": compute_reward_corl2017,
     "custom": compute_reward_custom,
     "custom1": compute_reward_custom1,
-    "custom2": compute_reward_custom2,
+    "custom4": compute_reward_custom4,
     "custom3": compute_reward_custom3,
     "custom_depth": compute_reward_custom_depth,
     "lane_keep": compute_reward_lane_keep,

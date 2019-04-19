@@ -30,7 +30,7 @@ from planet import networks
 from planet import tools
 
 
-from planet import IMG_SIZE, EPISODE_LEN, REPEATE, USE_SENSOR
+from planet import IMG_SIZE, EPISODE_LEN, REPEATE, USE_SENSOR, ENABLE_EXPERT
 
 Task = collections.namedtuple(
     'Task', 'name, env_ctor, max_length, state_components')  #  names for elements of the tuple.('Task' is typename.)
@@ -301,7 +301,8 @@ class DeepMindWrapper_carla(object):
     self.img, reward, done, info = self._env.step(action)
     # print(self.img)
     obs = {'state':np.array([0.0])}
-    return obs, reward, done, {'next_command_id': info['next_command_id']}
+    _info = {'next_command_id': info['next_command_id']} if not ENABLE_EXPERT else {'next_command_id': info['next_command_id'], 'expert_action':np.array(info['action'])}
+    return obs, reward, done, _info
     # return obs, reward, done, {}
 
 
@@ -323,7 +324,7 @@ def _dm_control_env_carla(action_repeat, max_length, env_name, img_size):
   assert env_name == 'carla'
   from planet.envs.carla.env import CarlaEnv
   def env_ctor():
-    env = CarlaEnv()
+    env = CarlaEnv(enable_autopilot=ENABLE_EXPERT)
     env = DeepMindWrapper_carla(env, img_size)
     env = control.wrappers.ActionRepeat(env, action_repeat)    # reward: sum the rewards of each repeated action
     env = control.wrappers.LimitDuration(env, max_length)
