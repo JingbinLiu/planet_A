@@ -495,7 +495,10 @@ class CarlaEnv(gym.Env):
         py_measurements["total_reward"] = self.total_reward
 
         # done or not
-        done = False
+        # done = False
+        # done = self.cnt1 > 50 and (py_measurements["collision_vehicles"] or py_measurements["collision_pedestrians"] or py_measurements["collision_other"] or self.displacement < 0.5)
+        done = self.cnt1 > 50 and self.displacement < 0.5
+
         # done = (self.num_steps > self.scenario["max_steps"]
         #         or py_measurements["next_command"] == "REACH_GOAL" or py_measurements["intersection_offroad"] or py_measurements["intersection_otherlane"]
         #         or (self.config["early_terminate_on_collision"]
@@ -668,7 +671,7 @@ class CarlaEnv(gym.Env):
 
 
 
-        if self.cnt1 >= 100 and self.cnt1 % 10 == 0:
+        if self.cnt1 >= 50 and self.cnt1 % 20 == 0:
             self.displacement = float(
                 np.linalg.norm([
                     cur.transform.location.x - self.pre_pos.x,
@@ -1037,7 +1040,7 @@ if __name__ == "__main__":
         print(i, "reward", reward, "total", total_reward, "done", done)
         print('displacement:', info['displacement'])
 
-        if i > 10000:
+        if done:
             env.reset()
             i = 0
             total_reward = 0.0
