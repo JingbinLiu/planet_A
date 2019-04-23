@@ -27,7 +27,7 @@ from gym.spaces import Box, Discrete, Tuple
 
 from planet import REWARD_FUNC, IMG_SIZE,  USE_SENSOR, SCENARIO
 
-exec('from scenarios import '+ SCENARIO + ' as SCENARIO')
+exec('from .scenarios import '+ SCENARIO + ' as SCENARIO')
 
 # from .scenarios import TOWN2_NPC, TOWN2_WEATHER, TOWN2_WEATHER_NPC,\
 #     LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
@@ -502,7 +502,7 @@ class CarlaEnv(gym.Env):
         # done or not
         # done = False
         # done = self.cnt1 > 50 and (py_measurements["collision_vehicles"] or py_measurements["collision_pedestrians"] or py_measurements["collision_other"] or self.displacement < 0.5)
-        done = self.cnt1 > 50 and self.displacement < 0.5
+        done = self.cnt1 > 50 and self.displacement < 0.2
 
         # done = (self.num_steps > self.scenario["max_steps"]
         #         or py_measurements["next_command"] == "REACH_GOAL" or py_measurements["intersection_offroad"] or py_measurements["intersection_otherlane"]
@@ -676,7 +676,7 @@ class CarlaEnv(gym.Env):
 
 
 
-        if self.cnt1 > 50 and self.cnt1 % 20 == 0:
+        if self.cnt1 > 50 and self.cnt1 % 30 == 0:
             self.displacement = float(
                 np.linalg.norm([
                     cur.transform.location.x - self.pre_pos.x,
