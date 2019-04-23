@@ -27,7 +27,7 @@ from gym.spaces import Box, Discrete, Tuple
 
 from planet import REWARD_FUNC, IMG_SIZE,  USE_SENSOR, SCENARIO
 
-exec('from .scenarios import '+ SCENARIO + ' as SCENARIO')
+exec('from scenarios import '+ SCENARIO + ' as SCENARIO')
 
 # from .scenarios import TOWN2_NPC, TOWN2_WEATHER, TOWN2_WEATHER_NPC,\
 #     LANE_KEEP, TOWN2_ALL, TOWN2_ONE_CURVE, TOWN2_ONE_CURVE_0, TOWN2_ONE_CURVE_STRAIGHT_NAV,TOWN2_STRAIGHT_DYNAMIC_0, TOWN2_STRAIGHT_0
@@ -157,7 +157,6 @@ atexit.register(cleanup)
 
 class CarlaEnv(gym.Env):
     def __init__(self, config=ENV_CONFIG, enable_autopilot = False):
-        self.cnt = 0
         self.enable_autopilot = enable_autopilot
         self.config = config
         self.config["x_res"], self.config["y_res"] = IMG_SIZE
@@ -228,6 +227,9 @@ class CarlaEnv(gym.Env):
         self.start_coord = None
         self.end_coord = None
         self.last_obs = None
+
+        self.cnt1 = 0
+        self.displacement = 1000.0
 
     def init_server(self):
         print("Initializing new Carla server...")
@@ -367,6 +369,7 @@ class CarlaEnv(gym.Env):
         scene = self.client.load_settings(settings)
         self.positions = positions = scene.player_start_spots
         self.start_pos = positions[self.scenario["start_pos_id"]]
+        self.pre_pos = self.start_pos.location
         self.end_pos = positions[self.scenario["end_pos_id"]]
         self.start_coord = [
             self.start_pos.location.x // 1, self.start_pos.location.y // 1
@@ -665,14 +668,14 @@ class CarlaEnv(gym.Env):
 
 
 
-        if self.cnt > 100 and self.cnt % 10 == 0:
-            displacement_10steps = float(
+        if self.cnt1 >= 100 and self.cnt1 % 10 == 0:
+            self.displacement = float(
                 np.linalg.norm([
-                    cur.transform.location.x - self.pre10_pos,
-                    cur.transform.location.y - self.pre10_pos
+                    cur.transform.location.x - self.pre_pos.x,
+                    cur.transform.location.y - self.pre_pos.y
                 ]) )
-            self.pre_pos = self.cur.transform.location
-        self.cnt += 1
+            self.pre_pos = cur.transform.location
+        self.cnt1 += 1
 
 
         py_measurements = {
@@ -702,6 +705,7 @@ class CarlaEnv(gym.Env):
             "max_steps": self.scenario["max_steps"],
             "next_command": next_command,
             "next_command_id": COMMAND_ORDINAL[next_command],
+            "displacement": self.displacement,
         }
 
         if CARLA_OUT_PATH and self.config["log_images"]:
@@ -1031,6 +1035,7 @@ if __name__ == "__main__":
 
         total_reward += reward
         print(i, "reward", reward, "total", total_reward, "done", done)
+        print('displacement:', info['displacement'])
 
         if i > 10000:
             env.reset()
