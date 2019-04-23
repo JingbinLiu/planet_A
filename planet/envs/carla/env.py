@@ -228,8 +228,8 @@ class CarlaEnv(gym.Env):
         self.end_coord = None
         self.last_obs = None
 
-        self.cnt1 = 0
-        self.displacement = 1000.0
+        self.cnt1 = None
+        self.displacement = None
 
     def init_server(self):
         print("Initializing new Carla server...")
@@ -293,6 +293,7 @@ class CarlaEnv(gym.Env):
         self.prev_image = None
         self.episode_id = datetime.today().strftime("%Y-%m-%d_%H-%M-%S_%f")
         self.measurements_file = None
+
 
         # Create a CarlaSettings object. This object is a wrapper around
         # the CarlaSettings.ini file. Here we set the configuration we
@@ -369,7 +370,11 @@ class CarlaEnv(gym.Env):
         scene = self.client.load_settings(settings)
         self.positions = positions = scene.player_start_spots
         self.start_pos = positions[self.scenario["start_pos_id"]]
+
         self.pre_pos = self.start_pos.location
+        self.cnt1 = 0
+        self.displacement = 1000.0
+
         self.end_pos = positions[self.scenario["end_pos_id"]]
         self.start_coord = [
             self.start_pos.location.x // 1, self.start_pos.location.y // 1
@@ -671,7 +676,7 @@ class CarlaEnv(gym.Env):
 
 
 
-        if self.cnt1 >= 50 and self.cnt1 % 20 == 0:
+        if self.cnt1 > 50 and self.cnt1 % 20 == 0:
             self.displacement = float(
                 np.linalg.norm([
                     cur.transform.location.x - self.pre_pos.x,
