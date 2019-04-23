@@ -292,8 +292,7 @@ class LimitDuration(object):
     if self._step >= self._duration:    # if step error occurs, self._step will be reset to 0, then self._step will always < self._duration and done is False.
       done = True
       self._step = None
-    else:
-      # assert not done
+    elif self._step < 50:
       if done:
         print('step error... please check the env.')
         self.step_error = True
@@ -442,10 +441,10 @@ class CollectGymDataset(object):
 
       # control data collection...
       elif acc_reward > COLLECT_EPISODE:
-        print('accumulative reward({}) > {}... this episode will NOT be saved.'.format(acc_reward,COLLECT_EPISODE))
+        print('episode length: {}.  accumulative reward({}) > {}... this episode will NOT be saved.'.format(len(self._episode),acc_reward,COLLECT_EPISODE))
 
       elif self._outdir:
-        print('accumulative reward({}) <= {}... this episode will be saved.'.format(acc_reward,COLLECT_EPISODE))
+        print('episode length: {}.  accumulative reward({}) <= {}... this episode will be saved.'.format(len(self._episode),acc_reward,COLLECT_EPISODE))
         filename = self._get_filename()
         #print('writing ......................................')
         self._write(episode, filename)   #

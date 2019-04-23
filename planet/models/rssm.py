@@ -93,7 +93,7 @@ class RSSM(base.Base):
     inputs = tf.concat([prev_state['sample'], prev_action], -1)    # [s_t-1, a_t-1]  # shape(40,30+2)
     hidden = tf.layers.dense(inputs, **self._kwargs)               # embedding.      # shape(40,200)
     belief, rnn_state = self._cell(hidden, prev_state['rnn_state']) # p( h_t | h_t-1, [s_t-1, a_t-1] )  # shape(40,200), shape(40,200)
-    # hidden = belief                                               # not using rnn_state???
+    hidden = belief                                               # not using rnn_state???
     hidden = tf.layers.dense(hidden, **self._kwargs)
     mean = tf.layers.dense(hidden, self._state_size, None)         # shape(40,30)
     stddev = tf.layers.dense(hidden, self._state_size, tf.nn.softplus)
