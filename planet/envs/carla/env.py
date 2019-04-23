@@ -157,6 +157,7 @@ atexit.register(cleanup)
 
 class CarlaEnv(gym.Env):
     def __init__(self, config=ENV_CONFIG, enable_autopilot = False):
+        self.cnt = 0
         self.enable_autopilot = enable_autopilot
         self.config = config
         self.config["x_res"], self.config["y_res"] = IMG_SIZE
@@ -368,10 +369,10 @@ class CarlaEnv(gym.Env):
         self.start_pos = positions[self.scenario["start_pos_id"]]
         self.end_pos = positions[self.scenario["end_pos_id"]]
         self.start_coord = [
-            self.start_pos.location.x // 100, self.start_pos.location.y // 100
+            self.start_pos.location.x // 1, self.start_pos.location.y // 1
         ]
         self.end_coord = [
-            self.end_pos.location.x // 100, self.end_pos.location.y // 100
+            self.end_pos.location.x // 1, self.end_pos.location.y // 1
         ]
         print("Start pos {} ({}), end {} ({})".format(
             self.scenario["start_pos_id"], self.start_coord,
@@ -628,7 +629,6 @@ class CarlaEnv(gym.Env):
 
 
 
-
         cur = measurements.player_measurements
 
         if self.config["enable_planner"]:
@@ -653,15 +653,27 @@ class CarlaEnv(gym.Env):
             ], [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z], [
                 self.end_pos.orientation.x, self.end_pos.orientation.y,
                 GROUND_Z
-            ]) / 100
+            ])
         else:
             distance_to_goal = -1
 
         distance_to_goal_euclidean = float(
-            np.linalg.norm([
+            np.linalg.norm([  # default norm: L2 norm
                 cur.transform.location.x - self.end_pos.location.x,
                 cur.transform.location.y - self.end_pos.location.y
-            ]) / 100)
+            ]) )
+
+
+
+        if self.cnt > 100 and self.cnt % 10 == 0:
+            displacement_10steps = float(
+                np.linalg.norm([
+                    cur.transform.location.x - self.pre10_pos,
+                    cur.transform.location.y - self.pre10_pos
+                ]) )
+            self.pre_pos = self.cur.transform.location
+        self.cnt += 1
+
 
         py_measurements = {
             "episode_id": self.episode_id,
@@ -965,8 +977,8 @@ def print_measurements(measurements):
     message += "{other_lane:.0f}% other lane, {offroad:.0f}% off-road, "
     message += "({agents_num:d} non-player agents in the scene)"
     message = message.format(
-        pos_x=player_measurements.transform.location.x / 100,  # cm -> m
-        pos_y=player_measurements.transform.location.y / 100,
+        pos_x=player_measurements.transform.location.x,
+        pos_y=player_measurements.transform.location.y,
         speed=player_measurements.forward_speed,
         col_cars=player_measurements.collision_vehicles,
         col_ped=player_measurements.collision_pedestrians,
