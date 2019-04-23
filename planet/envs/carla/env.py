@@ -676,7 +676,7 @@ class CarlaEnv(gym.Env):
 
 
 
-        if self.cnt1 > 50 and self.cnt1 % 30 == 0:
+        if self.cnt1 > 70 and self.cnt1 % 30 == 0:
             self.displacement = float(
                 np.linalg.norm([
                     cur.transform.location.x - self.pre_pos.x,
