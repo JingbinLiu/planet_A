@@ -79,6 +79,13 @@ POSES_TOWN2_NAV = [[19, 66], [79, 14], [19, 57], [23, 1], [53, 76], [42, 13], [
                    [5, 57], [70, 73], [46, 67], [57, 50], [61, 49], [21, 12],
                    [51, 81], [77, 68], [56, 65], [43, 54]]
 
+
+POSES_TOWN2_ALL = [[i , (i+40)%80] for i in range(150)]+[[i , (i+81)%80] for i in range(150)]
+TOWN2_ALL_150 = [
+build_scenario("Town02", start, end, 0, 0, 2000, [0]) for (start, end) in POSES_TOWN2_ALL
+]
+
+
 TOWN1_STRAIGHT = [
     build_scenario("Town01", start, end, 0, 0, 300, TEST_WEATHERS)
     for (start, end) in POSES_TOWN1_STRAIGHT
