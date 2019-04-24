@@ -106,6 +106,10 @@ TOWN1_NAVIGATION_DYNAMIC = [
     for (start, end) in POSES_TOWN1_NAV
 ]
 
+TOWN1_ONE_CURVE_STRAIGHT_NAV = [
+build_scenario("Town01", start, end, 0, 0, 2000, [0]) for (start, end) in POSES_TOWN1_ONE_CURVE+POSES_TOWN1_STRAIGHT+POSES_TOWN1_NAV
+]
+
 TOWN2_STRAIGHT = [
     build_scenario("Town02", start, end, 0, 0, 300, TRAIN_WEATHERS)
     for (start, end) in POSES_TOWN2_STRAIGHT
