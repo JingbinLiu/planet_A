@@ -319,10 +319,23 @@ class Trainer(object):
       state = tf.train.get_checkpoint_state(logdir)
       if checkpoint:
         checkpoint = os.path.join(logdir, checkpoint)
-      if not checkpoint and state and state.model_checkpoint_path:
+      if not checkpoint and state and state.model_checkpoint_path:  # determine the checkpoint to restore.
         checkpoint = state.model_checkpoint_path
       if checkpoint:
-        saver.restore(sess, checkpoint)
+        # saver.restore(sess, checkpoint)
+        variables_to_restore = tf.contrib.framework.get_variables_to_restore()
+        # variables_restore = [v for v in variables_to_restore if v.name.split('/')[0] not in 'angular_speed_degree']
+        # variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name]
+        variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name and 'env_temporary' not in v.name]
+        saver1 = tf.train.Saver(variables_restore)
+        saver1.restore(sess, checkpoint)
+
+# tf.get_collection('variables')
+#   variables_to_restore = tf.contrib.framework.get_variables_to_restore()
+#   variables_restore = [v for v in varialbes if v.name.split('/')[0] != 'feed_forward_network']
+#   saver1 = tf.train.Saver(variables_restore)
+#   saver1.restore(sess, checkpoint)
+# tf.train.Saver([v for v in variables_to_restore if 'angular_speed_degree' not in v.name and 'env_temporary' not in v.name]).restore(sess, checkpoint)
 
   def _store_checkpoint(self, sess, saver, global_step):
     """Store a checkpoint if a log directory was provided to the constructor.

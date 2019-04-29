@@ -198,17 +198,17 @@ from __future__ import print_function
 
 ##########################################
 
-# TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
-# IMG_SIZE = (128, 128)
-# H_SIZE, S_SIZE = 200, 30
-# EPISODE_LEN, COLLECT_EPISODE = 600, 300000.0
-# REPEATE, NUM_SEED = 1, 5
-# BATCHSIZE, CHUNK_LEN = 50, 50
-# REWARD_FUNC = 'custom3'
-# USE_SENSOR = 'use_rgb'
-# NUM_CHANNELS = 3
-# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
-# LOGDIR = '~/Data/planet/carla_128_200'
+TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
+IMG_SIZE = (128, 128)
+H_SIZE, S_SIZE = 200, 30
+EPISODE_LEN, COLLECT_EPISODE = 600, 300000.0
+REPEATE, NUM_SEED = 1, 5
+BATCHSIZE, CHUNK_LEN = 50, 50
+REWARD_FUNC = 'custom3'
+USE_SENSOR = 'use_rgb'
+NUM_CHANNELS = 3
+SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
+LOGDIR = '~/Data/planet/carla128'
 
 
 # # h = b
@@ -224,29 +224,18 @@ from __future__ import print_function
 # SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
 # LOGDIR = '~/Data/planet/carla_128_400-60_hb_200'
 
-# TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
-# IMG_SIZE = (128, 128)
-# H_SIZE, S_SIZE = 200, 30
-# EPISODE_LEN, COLLECT_EPISODE = 600, 1000.0
-# REPEATE, NUM_SEED = 1, 5
-# BATCHSIZE, CHUNK_LEN = 50, 50
-# REWARD_FUNC = 'custom3'
-# USE_SENSOR = 'use_rgb'
-# NUM_CHANNELS = 3
-# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
-# LOGDIR = '~/Data/planet/carla128'
 
 #############################################
 
 
-TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
-IMG_SIZE = (64, 64)
-H_SIZE, S_SIZE = 200, 30
-EPISODE_LEN, COLLECT_EPISODE = 100, 1000.0
-REPEATE, NUM_SEED = 1, 1
-BATCHSIZE, CHUNK_LEN = 5, 5
-REWARD_FUNC = 'custom3'
-USE_SENSOR = 'use_rgb'
-NUM_CHANNELS = 3
-SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
-LOGDIR = '~/Data/planet/carla_debug'
+# TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
+# IMG_SIZE = (64, 64)
+# H_SIZE, S_SIZE = 200, 30
+# EPISODE_LEN, COLLECT_EPISODE = 100, 300000.0
+# REPEATE, NUM_SEED = 1, 1
+# BATCHSIZE, CHUNK_LEN = 5, 5
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
+# LOGDIR = '~/Data/planet/carla_debug'

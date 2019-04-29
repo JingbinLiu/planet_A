@@ -26,6 +26,7 @@ from planet import tools
 def feed_forward(
     state, data_shape, num_layers=2, activation=None, cut_gradient=False):
   """Create a model returning unnormalized MSE distribution."""
+  # with tf.variable_scope('feed_forward_network'):
   hidden = state
   if cut_gradient:
     hidden = tf.stop_gradient(hidden)
