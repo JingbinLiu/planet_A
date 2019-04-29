@@ -127,6 +127,13 @@ def _loss_functions(config, params):
   config.overshooting_losses = config.zero_step_losses.copy(_unlocked=True)
   config.overshooting_losses.reward = params.get(
       'overshooting_reward_scale', 100.0)
+
+  # loss weights for angular_speed_degree.
+  config.zero_step_losses.angular_speed_degree = 4.0
+  config.overshooting_losses.angular_speed_degree = 40.0
+  config.zero_step_losses.reward = 6.0
+  config.overshooting_losses.reward = 60.0
+
   del config.overshooting_losses['image']
   del config.overshooting_losses['global_divergence']
   config.optimizers = _define_optimizers(config, params)

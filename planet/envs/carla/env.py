@@ -163,6 +163,27 @@ class CarlaEnv(gym.Env):
         self.city = self.config["server_map"].split("/")[-1]
         if self.config["enable_planner"]:
             self.planner = Planner(self.city)
+            self.intersections_node = self.planner._city_track._map.get_intersection_nodes()
+            self.intersections_pos = np.array([self.planner._city_track._map.convert_to_world(intersection_node) for intersection_node in self.intersections_node])
+            self.pre_intersection = np.array([0.0,0.0])
+
+            # # Cartesian coordinates
+            self.headings = np.array([[1,0],[-1,0],[0,1],[0,-1]])
+            # self.lrs_matrix = {"GO_STRAIGHT": np.array([[1,0],[0,1]]),\
+            #                    "TURN_RIGHT": np.array([[0,-1],[1,0]]),\
+            #                    "TURN_LEFT": np.array([[0,1],[-1,0]])}
+            # self.goal_heading = np.array([0.0,0.0])
+            # self.current_heading = None
+            # self.pre_heading = None
+            # self.angular_speed = None
+
+            # Angular degree
+            self.headings_degree = np.array([0.0, 180.0, 90.0, -90.0])  # one-one mapping to self.headings
+            self.lrs_degree = {"GO_STRAIGHT": 0.0,  "TURN_LEFT": -90.0, "TURN_RIGHT": 90.0}
+            self.goal_heading_degree = 0.0
+            self.current_heading_degree = None
+            self.pre_heading_degree = None
+            self.angular_speed_degree = np.array(0.0)
 
         # The Action Space
         if config["discrete_actions"]:
@@ -408,6 +429,13 @@ class CarlaEnv(gym.Env):
         # Process observations: self._read_observation() returns image and py_measurements.
         image, py_measurements = self._read_observation()
         self.prev_measurement = py_measurements
+
+        # self.current_heading = self.pre_heading = np.array([py_measurements["x_orient"], py_measurements["y_orient"]])
+        # self.angular_speed = 0.0
+
+        self.pre_heading_degree = self.current_heading_degree = py_measurements["current_heading_degree"]
+        self.angular_speed_degree = np.array(0.0)
+
         return self.encode_obs(self.preprocess_image(image), py_measurements), py_measurements
 
     def encode_obs(self, image, py_measurements):
@@ -436,6 +464,9 @@ class CarlaEnv(gym.Env):
             self.clear_server_state()
             return (self.last_obs, 0.0, True, self.prev_measurement)
 
+
+    def delta_degree(self, deltaxy):
+        return  deltaxy if np.abs(deltaxy) < 180 else deltaxy - np.sign(deltaxy) * 360
 
     # image, py_measurements = self._read_observation()  --->  self.preprocess_image(image)   --->  step observation output
     # @set_timeout(10)
@@ -466,7 +497,7 @@ class CarlaEnv(gym.Env):
             print("steer", steer, "throttle", throttle, "brake", brake,
                   "reverse", reverse)
 
-
+        # print(self.client)
         self.client.send_control(
             steer=steer,
             throttle=throttle,
@@ -491,6 +522,12 @@ class CarlaEnv(gym.Env):
             "reverse": reverse,
             "hand_brake": hand_brake,
         }
+
+
+        # compute angular_speed
+        self.current_heading_degree = py_measurements["current_heading_degree"]
+        self.angular_speed_degree = np.array(self.delta_degree(self.current_heading_degree-self.pre_heading_degree))
+        self.pre_heading_degree = py_measurements["current_heading_degree"]
 
         # compute reward
         reward = compute_reward(self, self.prev_measurement, py_measurements)
@@ -649,8 +686,33 @@ class CarlaEnv(gym.Env):
                 [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z],\
                 [self.end_pos.orientation.x, self.end_pos.orientation.y,GROUND_Z]\
                 )]
+
+            # modify next_command
+            current_pos = np.array([cur.transform.location.x, cur.transform.location.y])\
+                + np.array([cur.transform.orientation.x, cur.transform.orientation.y]) * 5.0
+            dist_intersection_current_pos = np.linalg.norm(self.intersections_pos[:,:2] - current_pos, axis=1)
+            is_near_intersection = np.min(dist_intersection_current_pos) < 18.0
+            if not is_near_intersection:
+                next_command = "LANE_FOLLOW"
+
+            # goal_heading
+            if is_near_intersection:
+                cur_intersection = self.intersections_pos[dist_intersection_current_pos.argmin(),:2]
+            else:
+                self.goal_heading_degree = 0.0
+            if is_near_intersection and np.linalg.norm(self.pre_intersection- cur_intersection) > 0.1:
+
+                cur_heading0 = cur_intersection - current_pos
+                cur_heading_1 = cur_heading0/np.linalg.norm(cur_heading0)
+                cur_heading_degree = self.headings_degree[np.linalg.norm(cur_heading_1 - self.headings, axis=1).argmin()]
+                self.goal_heading_degree = self.delta_degree(cur_heading_degree + self.lrs_degree[next_command])
+
+                self.pre_intersection = cur_intersection
+
+
         else:
             next_command = "LANE_FOLLOW"
+
 
         if next_command == "REACH_GOAL":
             distance_to_goal = 0.0  # avoids crash in planner
@@ -675,7 +737,7 @@ class CarlaEnv(gym.Env):
             ]) )
 
 
-
+        # displacement
         if self.cnt1 > 70 and self.cnt1 % 30 == 0:
             self.displacement = float(
                 np.linalg.norm([
@@ -714,6 +776,11 @@ class CarlaEnv(gym.Env):
             "next_command": next_command,
             "next_command_id": COMMAND_ORDINAL[next_command],
             "displacement": self.displacement,
+            "is_near_intersection": is_near_intersection,
+
+            "goal_heading_degree": self.goal_heading_degree,
+            "angular_speed_degree": self.angular_speed_degree,
+            "current_heading_degree":cur.transform.rotation.yaw,  # left-, right+, (-180 ~ 180) degrees
         }
 
         if CARLA_OUT_PATH and self.config["log_images"]:
@@ -1015,7 +1082,7 @@ def collided_done(py_measurements):
 
 if __name__ == "__main__":
 
-    env = CarlaEnv(enable_autopilot=True)
+    env = CarlaEnv(enable_autopilot=False)
     obs = env.reset()
     print("reset")
     start = time.time()
@@ -1028,22 +1095,26 @@ if __name__ == "__main__":
             obs, reward, done, info = env.step(3)
         else:
 
-            # # command from keyboard.
-            # commd = input('input command:')    # type (str)
-            # if commd == 'a':
-            #     steer_commd = -1
-            # elif commd=='d':
-            #     steer_commd = 1
-            # else:
-            #     steer_commd = 0
-            # obs, reward, done, info = env.step([0.5, steer_commd])
+            # command from keyboard.
+            commd = input('input command:')    # type (str)
+            if commd == 'a':
+                steer_commd = -1
+            elif commd=='d':
+                steer_commd = 1
+            else:
+                steer_commd = 0
+            obs, reward, done, info = env.step([0.5, steer_commd])
 
-            # fixed command.
-            obs, reward, done, info = env.step([0.5, 0.0])
+            # # fixed command.
+            # obs, reward, done, info = env.step([0.5, 0.0])
 
         total_reward += reward
-        print(i, "reward", reward, "total", total_reward, "done", done)
-        print('displacement:', info['displacement'])
+        # print(i, "reward", reward, "total", total_reward, "done", done)
+        print(i, 'displacement:', info['displacement'])
+        print('curent_heading:',[info['x_orient'],info['y_orient']])
+        print('current_heading_degree:', info["current_heading_degree"])
+        print("goal_heading_degree:", info["goal_heading_degree"])
+        print("angular_speed_degree:", info["angular_speed_degree"])
 
         if done:
             env.reset()

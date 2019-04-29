@@ -275,7 +275,7 @@ def carla(config, params):
   print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
   max_length = EPISODE_LEN // action_repeat
   state_components = [
-      'reward', 'state']
+      'reward', 'angular_speed_degree']
   img_size = IMG_SIZE
   env_ctor = functools.partial(
     _dm_control_env_carla, action_repeat, max_length, 'carla', img_size)
@@ -292,7 +292,7 @@ class DeepMindWrapper_carla(object):
     self._env = env
     self._render_size = render_size
     self._camera_id = camera_id
-    self.observation_space = gym.spaces.Dict({'state':gym.spaces.Box(low=-1,high=1,shape=(1,))})
+    self.observation_space = gym.spaces.Dict({'angular_speed_degree':gym.spaces.Box(low=-10,high=10,shape=(1,))})
 
   def __getattr__(self, name):
     return getattr(self._env, name)
@@ -300,7 +300,8 @@ class DeepMindWrapper_carla(object):
   def step(self, action):
     self.img, reward, done, info = self._env.step(action)
     # print(self.img)
-    obs = {'state':np.array([0.0])}
+    # obs = {'state':np.array([0.0])}
+    obs = {'angular_speed_degree': info["angular_speed_degree"]}
     _info = {'next_command_id': info['next_command_id']} if not ENABLE_EXPERT else {'next_command_id': info['next_command_id'], 'expert_action':np.array(info['action'])}
     return obs, reward, done, _info
     # return obs, reward, done, {}
@@ -308,7 +309,8 @@ class DeepMindWrapper_carla(object):
 
   def reset(self):
     self.img, info = self._env.reset()
-    obs = {'state':np.array([0.0])}
+    # obs = {'state':np.array([0.0])}
+    obs = {'angular_speed_degree': info["angular_speed_degree"]}
     return obs
 
   def render(self, *args, **kwargs):
