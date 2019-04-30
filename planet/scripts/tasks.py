@@ -303,6 +303,8 @@ class DeepMindWrapper_carla(object):
     # obs = {'state':np.array([0.0])}
     obs = {'angular_speed_degree': info["angular_speed_degree"]}
     _info = {'next_command_id': info['next_command_id']} if not ENABLE_EXPERT else {'next_command_id': info['next_command_id'], 'expert_action':np.array(info['action'])}
+    _info['goal_heading_degree'] = info["goal_heading_degree"]
+    _info['current_heading_degree'] = info["current_heading_degree"]
     return obs, reward, done, _info
     # return obs, reward, done, {}
 

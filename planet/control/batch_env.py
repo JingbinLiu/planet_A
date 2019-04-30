@@ -94,7 +94,7 @@ class BatchEnv(object):
     reward = np.stack(rewards)        # rewards: (shape(),); reward: shape(1,)
     done = np.stack(dones)            # dones: (bool,); done: shape(1,dtype=bool)
     info = tuple(infos)               # infos: <class 'tuple'>: ({'next_command_id': 4},)
-    info_cmd = np.array([dict_i['next_command_id'] for dict_i in info]).astype(np.float32)            # for carla, info is the driving command.
+    info_cmd = np.array([[dict_i['next_command_id'],dict_i['goal_heading_degree'],dict_i['current_heading_degree']] for dict_i in info]).astype(np.float32)            # for carla, info is the driving command.
     return observ, reward, done, info_cmd
 
   def reset(self, indices=None):

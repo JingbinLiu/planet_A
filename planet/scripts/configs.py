@@ -225,7 +225,8 @@ def _active_collection(config, params):
 
 def _define_simulation(task, config, params, horizon, batch_size):
   def objective(state, graph):
-    return graph.heads['reward'](graph.cell.features_from_state(state)).mean()
+    return graph.heads['reward'](graph.cell.features_from_state(state)).mean(),\
+           graph.heads['angular_speed_degree'](graph.cell.features_from_state(state)).mean()
   planner = functools.partial(
       control.planning.cross_entropy_method,
       amount=params.get('cem_amount', 1000),

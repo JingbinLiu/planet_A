@@ -59,8 +59,8 @@ class InGraphBatchEnv(object):
           'done', batch_dims, tf.int32,
           tf.constant_initializer(False), trainable=False)
       self._info = tf.get_variable(
-          'info_cmd', batch_dims, tf.float32,
-          tf.constant_initializer(0), trainable=False)      # for carla, info is the driving command.
+          'info', batch_dims+(3,), tf.float32,
+          tf.constant_initializer([0,0,0]), trainable=False)      # for carla, info is the driving command.
 
 
   def __getattr__(self, name):

@@ -322,13 +322,14 @@ class Trainer(object):
       if not checkpoint and state and state.model_checkpoint_path:  # determine the checkpoint to restore.
         checkpoint = state.model_checkpoint_path
       if checkpoint:
-        # saver.restore(sess, checkpoint)
-        variables_to_restore = tf.contrib.framework.get_variables_to_restore()
-        # variables_restore = [v for v in variables_to_restore if v.name.split('/')[0] not in 'angular_speed_degree']
-        # variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name]
-        variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name and 'env_temporary' not in v.name]
-        saver1 = tf.train.Saver(variables_restore)
-        saver1.restore(sess, checkpoint)
+        saver.restore(sess, checkpoint)
+
+        # variables_to_restore = tf.contrib.framework.get_variables_to_restore()
+        # # variables_restore = [v for v in variables_to_restore if v.name.split('/')[0] not in 'angular_speed_degree']
+        # # variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name]
+        # variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name and 'env_temporary' not in v.name]
+        # saver1 = tf.train.Saver(variables_restore)
+        # saver1.restore(sess, checkpoint)
 
 # tf.get_collection('variables')
 #   variables_to_restore = tf.contrib.framework.get_variables_to_restore()
