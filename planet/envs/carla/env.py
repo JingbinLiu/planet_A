@@ -700,7 +700,7 @@ class CarlaEnv(gym.Env):
                 cur_intersection = self.intersections_pos[dist_intersection_current_pos.argmin(),:2]
             else:
                 self.goal_heading_degree = 0.0
-            if is_near_intersection and np.linalg.norm(self.pre_intersection- cur_intersection) > 0.1:
+            if next_command in ["GO_STRAIGHT","TURN_LEFT","TURN_RIGHT"] and np.linalg.norm(self.pre_intersection- cur_intersection) > 0.1:
 
                 cur_heading0 = cur_intersection - current_pos
                 cur_heading_1 = cur_heading0/np.linalg.norm(cur_heading0)
@@ -717,16 +717,17 @@ class CarlaEnv(gym.Env):
         if next_command == "REACH_GOAL":
             distance_to_goal = 0.0  # avoids crash in planner
             self.end_pos = self.positions[random.choice(self.config["scenarios"])['end_pos_id']]
-        elif self.config["enable_planner"]:
-            distance_to_goal = self.planner.get_shortest_path_distance([
-                cur.transform.location.x, cur.transform.location.y, GROUND_Z
-            ], [
-                cur.transform.orientation.x, cur.transform.orientation.y,
-                GROUND_Z
-            ], [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z], [
-                self.end_pos.orientation.x, self.end_pos.orientation.y,
-                GROUND_Z
-            ])
+
+        # elif self.config["enable_planner"]:
+        #     distance_to_goal = self.planner.get_shortest_path_distance([
+        #         cur.transform.location.x, cur.transform.location.y, GROUND_Z
+        #     ], [
+        #         cur.transform.orientation.x, cur.transform.orientation.y,
+        #         GROUND_Z
+        #     ], [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z], [
+        #         self.end_pos.orientation.x, self.end_pos.orientation.y,
+        #         GROUND_Z
+        #     ])
         else:
             distance_to_goal = -1
 

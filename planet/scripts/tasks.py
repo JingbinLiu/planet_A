@@ -311,6 +311,8 @@ class DeepMindWrapper_carla(object):
 
   def reset(self):
     self.img, info = self._env.reset()
+    while info["next_command"] in ["GO_STRAIGHT","TURN_LEFT","TURN_RIGHT"]:
+      self.img, info = self._env.reset()
     # obs = {'state':np.array([0.0])}
     obs = {'angular_speed_degree': info["angular_speed_degree"]}
     return obs

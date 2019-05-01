@@ -71,7 +71,7 @@ def cross_entropy_method(
                    tf.case({ tf.equal(cmd_id,3):costn1, tf.equal(cmd_id,2):costn1, tf.equal(cmd_id,1):costn1}, default=costn0)
     return_heading = tf.reshape(heading_loss, (original_batch, amount))
 
-    total_return = return_+ 0.4*return_heading # /90.0*12*4
+    total_return = return_+ 0.6*return_heading # /90.0*12*4
 
     #2. define reward for planning
     # objectives = objective_fn(state)
