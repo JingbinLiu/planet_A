@@ -24,6 +24,7 @@ except Exception:
 
 import gym
 from gym.spaces import Box, Discrete, Tuple
+import random
 
 from planet import REWARD_FUNC, IMG_SIZE,  USE_SENSOR, SCENARIO
 
@@ -251,6 +252,7 @@ class CarlaEnv(gym.Env):
 
         self.cnt1 = None
         self.displacement = None
+        self.next_command = "LANE_FOLLOW"
 
     def init_server(self):
         print("Initializing new Carla server...")
@@ -315,6 +317,7 @@ class CarlaEnv(gym.Env):
         self.episode_id = datetime.today().strftime("%Y-%m-%d_%H-%M-%S_%f")
         self.measurements_file = None
 
+        self.pre_intersection = np.array([0.0, 0.0])
 
         # Create a CarlaSettings object. This object is a wrapper around
         # the CarlaSettings.ini file. Here we set the configuration we
@@ -436,6 +439,7 @@ class CarlaEnv(gym.Env):
         self.pre_heading_degree = self.current_heading_degree = py_measurements["current_heading_degree"]
         self.angular_speed_degree = np.array(0.0)
 
+
         return self.encode_obs(self.preprocess_image(image), py_measurements), py_measurements
 
     def encode_obs(self, image, py_measurements):
@@ -510,6 +514,7 @@ class CarlaEnv(gym.Env):
         if self.config["verbose"]:
             print("Next command", py_measurements["next_command"])
         print("Next command", py_measurements["next_command"])
+        print("dist_to_intersection:", py_measurements["dist_to_intersection"])
 
         if type(action) is np.ndarray:
             py_measurements["action"] = [float(a) for a in action]
@@ -680,12 +685,6 @@ class CarlaEnv(gym.Env):
         cur = measurements.player_measurements
 
         if self.config["enable_planner"]:
-            next_command = COMMANDS_ENUM[self.planner.get_next_command(
-                [cur.transform.location.x, cur.transform.location.y, GROUND_Z],\
-                [cur.transform.orientation.x, cur.transform.orientation.y,GROUND_Z],\
-                [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z],\
-                [self.end_pos.orientation.x, self.end_pos.orientation.y,GROUND_Z]\
-                )]
 
             # modify next_command
             current_pos = np.array([cur.transform.location.x, cur.transform.location.y])\
@@ -693,28 +692,36 @@ class CarlaEnv(gym.Env):
             dist_intersection_current_pos = np.linalg.norm(self.intersections_pos[:,:2] - current_pos, axis=1)
             is_near_intersection = np.min(dist_intersection_current_pos) < 18.0
             if not is_near_intersection:
-                next_command = "LANE_FOLLOW"
+                self.next_command = "LANE_FOLLOW"
 
             # goal_heading
             if is_near_intersection:
                 cur_intersection = self.intersections_pos[dist_intersection_current_pos.argmin(),:2]
+                self.dist_to_intersection = np.linalg.norm(cur_intersection - current_pos)
             else:
                 self.goal_heading_degree = 0.0
-            if next_command in ["GO_STRAIGHT","TURN_LEFT","TURN_RIGHT"] and np.linalg.norm(self.pre_intersection- cur_intersection) > 0.1:
-
+                self.dist_to_intersection = 1000.0
+            if is_near_intersection and np.linalg.norm(self.pre_intersection- cur_intersection) > 0.1:
+                self.next_command = COMMANDS_ENUM[self.planner.get_next_command(
+                    [cur.transform.location.x, cur.transform.location.y, GROUND_Z], \
+                    [cur.transform.orientation.x, cur.transform.orientation.y, GROUND_Z], \
+                    [self.end_pos.location.x, self.end_pos.location.y, GROUND_Z], \
+                    [self.end_pos.orientation.x, self.end_pos.orientation.y, GROUND_Z] \
+                    )]
+                if self.next_command == "LANE_FOLLOW":
+                    self.next_command = random.choice(["GO_STRAIGHT", "TURN_LEFT", "TURN_RIGHT"])
                 cur_heading0 = cur_intersection - current_pos
                 cur_heading_1 = cur_heading0/np.linalg.norm(cur_heading0)
                 cur_heading_degree = self.headings_degree[np.linalg.norm(cur_heading_1 - self.headings, axis=1).argmin()]
-                self.goal_heading_degree = self.delta_degree(cur_heading_degree + self.lrs_degree[next_command])
+                self.goal_heading_degree = self.delta_degree(cur_heading_degree + self.lrs_degree[self.next_command])
 
                 self.pre_intersection = cur_intersection
 
-
         else:
-            next_command = "LANE_FOLLOW"
+            self.next_command = "LANE_FOLLOW"
 
 
-        if next_command == "REACH_GOAL":
+        if self.next_command == "REACH_GOAL":
             distance_to_goal = 0.0  # avoids crash in planner
             self.end_pos = self.positions[random.choice(self.config["scenarios"])['end_pos_id']]
 
@@ -774,14 +781,15 @@ class CarlaEnv(gym.Env):
             "num_vehicles": self.scenario["num_vehicles"],
             "num_pedestrians": self.scenario["num_pedestrians"],
             "max_steps": self.scenario["max_steps"],
-            "next_command": next_command,
-            "next_command_id": COMMAND_ORDINAL[next_command],
+            "next_command": self.next_command,
+            "next_command_id": COMMAND_ORDINAL[self.next_command],
             "displacement": self.displacement,
             "is_near_intersection": is_near_intersection,
 
             "goal_heading_degree": self.goal_heading_degree,
             "angular_speed_degree": self.angular_speed_degree,
-            "current_heading_degree":cur.transform.rotation.yaw,  # left-, right+, (-180 ~ 180) degrees
+            "current_heading_degree": cur.transform.rotation.yaw,  # left-, right+, (-180 ~ 180) degrees
+            "dist_to_intersection": self.dist_to_intersection
         }
 
         if CARLA_OUT_PATH and self.config["log_images"]:
@@ -1116,6 +1124,7 @@ if __name__ == "__main__":
         print('current_heading_degree:', info["current_heading_degree"])
         print("goal_heading_degree:", info["goal_heading_degree"])
         print("angular_speed_degree:", info["angular_speed_degree"])
+        print("dist_to_intersection:", info["dist_to_intersection"])
 
         if done:
             env.reset()

@@ -305,6 +305,7 @@ class DeepMindWrapper_carla(object):
     _info = {'next_command_id': info['next_command_id']} if not ENABLE_EXPERT else {'next_command_id': info['next_command_id'], 'expert_action':np.array(info['action'])}
     _info['goal_heading_degree'] = info["goal_heading_degree"]
     _info['current_heading_degree'] = info["current_heading_degree"]
+    _info['dist_to_intersection'] = info["dist_to_intersection"]
     return obs, reward, done, _info
     # return obs, reward, done, {}
 
