@@ -210,18 +210,18 @@ NUM_CHANNELS = 3
 SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
 LOGDIR = '~/Data/planet/carla_test128_angular'
 
-
+#
 # TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
 # IMG_SIZE = (64, 64)
 # H_SIZE, S_SIZE = 200, 30
-# EPISODE_LEN, COLLECT_EPISODE = 300, 300000.0
+# EPISODE_LEN, COLLECT_EPISODE = 600, 300000.0
 # REPEATE, NUM_SEED = 1, 1
 # BATCHSIZE, CHUNK_LEN = 50, 50
 # REWARD_FUNC = 'custom3'
 # USE_SENSOR = 'use_rgb'
 # NUM_CHANNELS = 3
 # SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
-# LOGDIR = '~/Data/planet/carla_64_angular_1.5'
+# LOGDIR = '~/Data/planet/carla_test64_angular_0.3'
 
 
 #############################################

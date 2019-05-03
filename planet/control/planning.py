@@ -66,7 +66,8 @@ def cross_entropy_method(
     return_ = discounted_return.discounted_return(reward, length, discount)[:, 0]           # shape: (1000,)
     return_ = tf.reshape(return_, (original_batch, amount))                                 # shape: (1, 1000)
 
-    threshold_degree = tf.where(dist_to_intersection<10, 9.0*(10 - dist_to_intersection), 0)
+    # threshold_degree = tf.where(dist_to_intersection<10, 9.0*(10 - dist_to_intersection), 0)
+    threshold_degree = tf.where(dist_to_intersection < 9, 9 * (9 - dist_to_intersection), 0)
     angular_turn_ = discounted_return.discounted_return(angular_speed, length, 1.0)[:, 0]   # shape: (1000,)
     # angular_turn_abs = discounted_return.discounted_return(-tf.abs(angular_speed), length, 1.0)[:, 0]
     # angular_turn_relative = tf.reduce_sum(-tf.abs(angular_speed[...,1:]-angular_speed[...,:-1]),axis=-1)
