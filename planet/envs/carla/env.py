@@ -763,14 +763,15 @@ class CarlaEnv(gym.Env):
             "y": cur.transform.location.y,
             "x_orient": cur.transform.orientation.x,
             "y_orient": cur.transform.orientation.y,
-            "forward_speed": cur.forward_speed,
+            "forward_speed": np.array(cur.forward_speed),   ###
             "distance_to_goal": distance_to_goal,
             "distance_to_goal_euclidean": distance_to_goal_euclidean,
             "collision_vehicles": cur.collision_vehicles,
             "collision_pedestrians": cur.collision_pedestrians,
             "collision_other": cur.collision_other,
-            "intersection_offroad": cur.intersection_offroad,
-            "intersection_otherlane": cur.intersection_otherlane,
+            "collided": collision_(cur),                    ###
+            "intersection_offroad": np.array(cur.intersection_offroad),     ###
+            "intersection_otherlane": np.array(cur.intersection_otherlane), ###
             "weather": self.weather,
             "map": self.config["server_map"],
             "start_coord": self.start_coord,
@@ -787,7 +788,7 @@ class CarlaEnv(gym.Env):
             "is_near_intersection": is_near_intersection,
 
             "goal_heading_degree": self.goal_heading_degree,
-            "angular_speed_degree": self.angular_speed_degree,
+            "angular_speed_degree": self.angular_speed_degree,  ###
             "current_heading_degree": cur.transform.rotation.yaw,  # left-, right+, (-180 ~ 180) degrees
             "dist_to_intersection": self.dist_to_intersection
         }
@@ -805,7 +806,9 @@ class CarlaEnv(gym.Env):
         assert observation is not None, sensor_data
         return observation, py_measurements
 
-
+def collision_(cur):
+    collided = (cur.collision_vehicles > 0 or cur.collision_pedestrians > 0 or cur.collision_other > 0)
+    return np.array(collided, dtype=np.float32)
 
 
 def compute_reward_corl2017(env, prev, current):
@@ -916,7 +919,7 @@ def compute_reward_custom1(env, prev, current):
     return reward
 
 
-def compute_reward_custom4(env, prev, current):
+def compute_reward_custom2(env, prev, current):
     reward = 0.0
 
     # cur_dist = current["distance_to_goal"]
@@ -928,10 +931,10 @@ def compute_reward_custom4(env, prev, current):
     # # Distance travelled toward the goal in m
     # reward += 0.5 * np.clip(prev_dist - cur_dist, -12.0, 12.0)
 
-    # Speed reward, up 30.0 (km/h)
-    # reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
+    # Speed reward
+    reward += current["forward_speed"]*3.6/ 10.0  # 3.6km/h = 1m/s
     # reward += np.clip(current["forward_speed"]*3.6, 0.0, 30.0) / 10  # 3.6km/h = 1m/s
-    reward += np.where(current["forward_speed"]*3.6 < 40.0, current["forward_speed"]*3.6/10, -0.4*current["forward_speed"]*3.6+20.0)
+    # reward += np.where(current["forward_speed"]*3.6 < 30.0, current["forward_speed"]*3.6/10, -0.3*current["forward_speed"]*3.6+12.0)
     # New collision damage
     new_damage = (
         current["collision_vehicles"] + current["collision_pedestrians"] +
@@ -943,10 +946,10 @@ def compute_reward_custom4(env, prev, current):
         reward -= 300.0
 
     # Sidewalk intersection [0, 1]
-    reward -= 6 * (current["forward_speed"]+1.0) * current["intersection_offroad"]
+    reward -= 5 * (current["forward_speed"]+1.0) * current["intersection_offroad"]
     # print(current["intersection_offroad"])
     # Opposite lane intersection
-    reward -= 3 * (current["forward_speed"]+1.0) * current["intersection_otherlane"]  # [0 ~ 1]
+    reward -= 2 * (current["forward_speed"]+1.0) * current["intersection_otherlane"]  # [0 ~ 1]
 
     return reward
 
@@ -1046,7 +1049,7 @@ REWARD_FUNCTIONS = {
     "corl2017": compute_reward_corl2017,
     "custom": compute_reward_custom,
     "custom1": compute_reward_custom1,
-    "custom4": compute_reward_custom4,
+    "custom2": compute_reward_custom2,
     "custom3": compute_reward_custom3,
     "custom_depth": compute_reward_custom_depth,
     "lane_keep": compute_reward_lane_keep,
@@ -1104,18 +1107,18 @@ if __name__ == "__main__":
             obs, reward, done, info = env.step(3)
         else:
 
-            # command from keyboard.
-            commd = input('input command:')    # type (str)
-            if commd == 'a':
-                steer_commd = -1
-            elif commd=='d':
-                steer_commd = 1
-            else:
-                steer_commd = 0
-            obs, reward, done, info = env.step([0.5, steer_commd])
+            # # command from keyboard.
+            # commd = input('input command:')    # type (str)
+            # if commd == 'a':
+            #     steer_commd = -1
+            # elif commd=='d':
+            #     steer_commd = 1
+            # else:
+            #     steer_commd = 0
+            # obs, reward, done, info = env.step([0.5, steer_commd])
 
-            # # fixed command.
-            # obs, reward, done, info = env.step([0.5, 0.0])
+            # fixed command.
+            obs, reward, done, info = env.step([0.5, 0.0])
 
         total_reward += reward
         # print(i, "reward", reward, "total", total_reward, "done", done)
@@ -1125,6 +1128,7 @@ if __name__ == "__main__":
         print("goal_heading_degree:", info["goal_heading_degree"])
         print("angular_speed_degree:", info["angular_speed_degree"])
         print("dist_to_intersection:", info["dist_to_intersection"])
+        print('collided:', info["collided"])
 
         if done:
             env.reset()

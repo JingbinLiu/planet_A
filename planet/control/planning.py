@@ -58,10 +58,11 @@ def cross_entropy_method(
     (_, state), _ = tf.nn.dynamic_rnn(
         cell, (0 * obs, action, use_obs), initial_state=initial_state)
 
-    #1. define reward for planning
+
+    ##################    #1. define reward for planning
     objectives = objective_fn(state)   # shape: [shape(1000,12), shape(1000,12)]
-    reward = objectives[0]
-    angular_speed = objectives[1]
+    reward = objectives['reward']
+    angular_speed = objectives['angular_speed_degree']
 
     return_ = discounted_return.discounted_return(reward, length, discount)[:, 0]           # shape: (1000,)
     return_ = tf.reshape(return_, (original_batch, amount))                                 # shape: (1, 1000)
@@ -78,9 +79,10 @@ def cross_entropy_method(
 
     total_return = return_+ return_heading # /90.0*12*4
 
-    #2. define reward for planning
+
+    # #################    #2. define reward for planning
     # objectives = objective_fn(state)
-    # reward = objectives[0]
+    # reward = objectives['angular_speed_degree']
     # return_ = discounted_return.discounted_return(
     #     reward, length, discount)[:, 0]
     # total_return = tf.reshape(return_, (original_batch, amount))

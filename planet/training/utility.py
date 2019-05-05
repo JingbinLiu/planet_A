@@ -209,8 +209,8 @@ def compute_losses(
       output = heads[key](features)   # decoder is used.
       loss = -tools.mask(output.log_prob(target[key]), mask)
     else:
-      message = "Loss scale references unknown head '{}'."
-      raise KeyError(message.format(key))
+      message = "Loss scale of head '{}' is not used."
+      print(message.format(key))
     # Average over the batch and normalize by the maximum chunk length.
     loss = tf.reduce_mean(loss)
     losses[key] = tf.check_numerics(loss, key) if debug else loss

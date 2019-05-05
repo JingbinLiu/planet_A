@@ -129,10 +129,19 @@ def _loss_functions(config, params):
       'overshooting_reward_scale', 100.0)
 
   # loss weights for angular_speed_degree.
-  config.zero_step_losses.angular_speed_degree = 4.0
-  config.overshooting_losses.angular_speed_degree = 40.0
   config.zero_step_losses.reward = 6.0
   config.overshooting_losses.reward = 60.0
+  config.zero_step_losses.angular_speed_degree = 1.0
+  config.overshooting_losses.angular_speed_degree = 10.0
+  config.zero_step_losses.forward_speed = 1.0
+  config.overshooting_losses.forward_speed = 10.0
+  config.zero_step_losses.collided = 1.0
+  config.overshooting_losses.collided = 10.0
+  config.zero_step_losses.intersection_offroad = 1.0
+  config.overshooting_losses.intersection_offroad = 10.0
+  config.zero_step_losses.intersection_otherlane = 1.0
+  config.overshooting_losses.intersection_otherlane = 10.0
+
 
   del config.overshooting_losses['image']
   del config.overshooting_losses['global_divergence']
@@ -165,7 +174,7 @@ def _training_schedule(config, params):
 
 def _define_optimizers(config, params):
   optimizers = tools.AttrDict(_unlocked=True)
-  gradient_heads = params.get('gradient_heads', ['image', 'reward'])
+  gradient_heads = params.get('gradient_heads', ['image'])    # indispensable heads checking. e.g.['image', 'reward']
   assert all(head in config.heads for head in gradient_heads)
   diagnostics = r'.*/head_(?!{})[a-z]+/.*'.format('|'.join(gradient_heads))
   kwargs = dict(
@@ -225,8 +234,13 @@ def _active_collection(config, params):
 
 def _define_simulation(task, config, params, horizon, batch_size):
   def objective(state, graph):
-    return graph.heads['reward'](graph.cell.features_from_state(state)).mean(),\
-           graph.heads['angular_speed_degree'](graph.cell.features_from_state(state)).mean()
+    # return graph.heads['reward'](graph.cell.features_from_state(state)).mean(),\
+    #        graph.heads['angular_speed_degree'](graph.cell.features_from_state(state)).mean()
+    # return graph.heads['angular_speed_degree'](graph.cell.features_from_state(state)).mean()
+    obj_dict = {}
+    for component in task.state_components:
+        obj_dict[component] = graph.heads[component](graph.cell.features_from_state(state)).mean()
+    return obj_dict
   planner = functools.partial(
       control.planning.cross_entropy_method,
       amount=params.get('cem_amount', 1000),

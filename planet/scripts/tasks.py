@@ -30,7 +30,7 @@ from planet import networks
 from planet import tools
 
 
-from planet import IMG_SIZE, EPISODE_LEN, REPEATE, USE_SENSOR, ENABLE_EXPERT
+from planet import IMG_SIZE, EPISODE_LEN, REPEATE, USE_SENSOR, ENABLE_EXPERT, STATES
 
 Task = collections.namedtuple(
     'Task', 'name, env_ctor, max_length, state_components')  #  names for elements of the tuple.('Task' is typename.)
@@ -274,8 +274,8 @@ def carla(config, params):
   action_repeat = params.get('action_repeat', REPEATE)   # dict: D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.
   print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
   max_length = EPISODE_LEN // action_repeat
-  state_components = [
-      'reward', 'angular_speed_degree']
+  # state_components = ['reward','angular_speed_degree']
+  state_components = STATES
   img_size = IMG_SIZE
   env_ctor = functools.partial(
     _dm_control_env_carla, action_repeat, max_length, 'carla', img_size)
@@ -301,7 +301,9 @@ class DeepMindWrapper_carla(object):
     self.img, reward, done, info = self._env.step(action)
     # print(self.img)
     # obs = {'state':np.array([0.0])}
-    obs = {'angular_speed_degree': info["angular_speed_degree"]}
+    obs = {'angular_speed_degree': info["angular_speed_degree"], 'forward_speed': info['forward_speed'], \
+           'collided': info['collided'], 'intersection_offroad': info['intersection_offroad'], 'intersection_otherlane': info['intersection_otherlane']}
+
     _info = {'next_command_id': info['next_command_id']} if not ENABLE_EXPERT else {'next_command_id': info['next_command_id'], 'expert_action':np.array(info['action'])}
     _info['goal_heading_degree'] = info["goal_heading_degree"]
     _info['current_heading_degree'] = info["current_heading_degree"]
@@ -315,7 +317,8 @@ class DeepMindWrapper_carla(object):
     while info["next_command"] in ["GO_STRAIGHT","TURN_LEFT","TURN_RIGHT"]:
       self.img, info = self._env.reset()
     # obs = {'state':np.array([0.0])}
-    obs = {'angular_speed_degree': info["angular_speed_degree"]}
+    obs = {'angular_speed_degree': info["angular_speed_degree"], 'forward_speed': info['forward_speed'], \
+           'collided': info['collided'], 'intersection_offroad': info['intersection_offroad'], 'intersection_otherlane': info['intersection_otherlane']}
     return obs
 
   def render(self, *args, **kwargs):
