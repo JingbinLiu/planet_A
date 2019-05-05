@@ -149,7 +149,7 @@ build_scenario("Town02", start, end, 0, 0, 2000, [0,1,2,3,4,5,6,7,8,9,10]) for (
 ]
 
 TOWN2_NPC = [
-build_scenario("Town02", start, end, 500, 0, 2000, [0]) for (start, end) in POSES_TOWN2_ONE_CURVE+POSES_TOWN2_STRAIGHT+POSES_TOWN2_NAV
+build_scenario("Town02", start, end, 500, 500, 2000, [0]) for (start, end) in POSES_TOWN2_ONE_CURVE+POSES_TOWN2_STRAIGHT+POSES_TOWN2_NAV
 ]
 
 TOWN2_WEATHER_NPC = [
