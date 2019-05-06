@@ -328,8 +328,10 @@ class Trainer(object):
         # variables_to_restore = tf.contrib.framework.get_variables_to_restore()
         # # variables_restore = [v for v in variables_to_restore if v.name.split('/')[0] not in 'angular_speed_degree']
         # # variables_restore = [v for v in variables_to_restore if 'angular_speed_degree' not in v.name and 'env_temporary' not in v.name]
-        # # variables_restore = [v for v in variables_to_restore if 'reward' not in v.name and 'env_temporary' not in v.name and 'angular_speed_degree' not in v.name]
-        # variables_restore = [v for v in variables_to_restore if 'reward' not in v.name and 'env_temporary' not in v.name]
+        # variables_restore = [v for v in variables_to_restore if  'env_temporary' not in v.name \
+        #                      and 'forward_speed' not in v.name and 'collided' not in v.name and 'intersection_offroad' not in v.name\
+        #                      and 'intersection_otherlane' not in v.name and 'reward' not in v.name]
+        # # variables_restore = [v for v in variables_to_restore if 'reward' not in v.name and 'env_temporary' not in v.name]
         # saver1 = tf.train.Saver(variables_restore)
         # saver1.restore(sess, checkpoint)
 
