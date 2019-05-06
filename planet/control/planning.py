@@ -20,7 +20,7 @@ from tensorflow_probability import distributions as tfd
 import tensorflow as tf
 
 from planet.control import discounted_return
-from planet import tools
+from planet import tools, PLANNING
 
 def delta_degree(x):
   return tf.where(tf.abs(x) < 180 , x, x-tf.sign(x)*360)
@@ -59,33 +59,56 @@ def cross_entropy_method(
         cell, (0 * obs, action, use_obs), initial_state=initial_state)
 
     # objectives
-    objectives = objective_fn(state)   # shape: [shape(1000,12), shape(1000,12)]
+    objectives = objective_fn(state)   # shape: ['reward':shape(1000,12), 'angular_speed_degree':shape(1000,12), ...]
     reward = objectives['reward']
     angular_speed = objectives['angular_speed_degree']
-    forward_speed = objectives['forward_speed']
+    forward_speed = objectives['forward_speed']/10.0
+    collided = objectives['collided']
+    intersection_offroad = objectives['intersection_offroad']
+    intersection_otherlane = objectives['intersection_otherlane']
 
 
-    ##################    #1. define reward for planning
-    return_ = discounted_return.discounted_return(reward, length, discount)[:, 0]           # shape: (1000,)
-    return_ = tf.reshape(return_, (original_batch, amount))                                 # shape: (1, 1000)
-
-    # threshold_degree = tf.where(dist_to_intersection<10, 9.0*(10 - dist_to_intersection), 0)
-    threshold_degree = tf.where(dist_to_intersection < 9, 9 * (9 - dist_to_intersection), 0)
-    angular_turn_ = discounted_return.discounted_return(angular_speed, length, 1.0)[:, 0]   # shape: (1000,)
-    # angular_turn_abs = discounted_return.discounted_return(-tf.abs(angular_speed), length, 1.0)[:, 0]
-    # angular_turn_relative = tf.reduce_sum(-tf.abs(angular_speed[...,1:]-angular_speed[...,:-1]),axis=-1)
-    heading_loss = - tf.abs(delta_degree(goal_heading_degree - (current_heading_degree + angular_turn_)))* \
-                   tf.case({ tf.equal(cmd_id,3):costn1, tf.equal(cmd_id,2):costn1, tf.equal(cmd_id,1):costn1}, default=costn0)
-    heading_loss_weighted = heading_loss * tf.where(heading_loss>threshold_degree-90, tf.ones((amount,))*0.3, tf.ones((amount,))*1000.0) # + 0.3*angular_turn_relative # + 0.1*angular_turn_abs
-    return_heading = tf.reshape(heading_loss_weighted, (original_batch, amount))
-
-    total_return = return_+ return_heading # /90.0*12*4
-
-
-    # #################    #2. define reward for planning
+    # #################    #1. define reward for planning
     # return_ = discounted_return.discounted_return(
     #     reward, length, discount)[:, 0]
     # total_return = tf.reshape(return_, (original_batch, amount))
+
+
+    if not PLANNING:
+      ##################    #2. define reward for planning
+      return_ = discounted_return.discounted_return(reward, length, discount)[:, 0]           # shape: (1000,)
+      return_ = tf.reshape(return_, (original_batch, amount))                                 # shape: (1, 1000)
+
+      # threshold_degree = tf.where(dist_to_intersection<10, 9.0*(10 - dist_to_intersection), 0)
+      threshold_degree = tf.where(dist_to_intersection < 9, 9 * (9 - dist_to_intersection), 0)
+      angular_turn_ = discounted_return.discounted_return(angular_speed, length, 1.0)[:, 0]   # shape: (1000,)
+      # angular_turn_abs = discounted_return.discounted_return(-tf.abs(angular_speed), length, 1.0)[:, 0]
+      # angular_turn_relative = tf.reduce_sum(-tf.abs(angular_speed[...,1:]-angular_speed[...,:-1]),axis=-1)
+      heading_loss = - tf.abs(delta_degree(goal_heading_degree - (current_heading_degree + angular_turn_)))* \
+                     tf.case({ tf.equal(cmd_id,3):costn1, tf.equal(cmd_id,2):costn1, tf.equal(cmd_id,1):costn1}, default=costn0)
+      heading_loss_weighted = heading_loss * tf.where(heading_loss>threshold_degree-90, tf.ones((amount,))*0.3, tf.ones((amount,))*1000.0) # + 0.3*angular_turn_relative # + 0.1*angular_turn_abs
+      return_heading = tf.reshape(heading_loss_weighted, (original_batch, amount))
+
+      total_return = return_+ return_heading # /90.0*12*4
+
+    if PLANNING:
+      ##################    #3. define reward for planning
+      rewards = forward_speed - 300.0*tf.where(collided>0.3, collided, tf.ones_like(collided)*0.0) -20.0*intersection_offroad - 10.0*intersection_otherlane
+      return_ = discounted_return.discounted_return(rewards, length, discount)[:, 0]           # shape: (1000,)
+      return_ = tf.reshape(return_, (original_batch, amount))                                 # shape: (1, 1000)
+
+      # threshold_degree = tf.where(dist_to_intersection<10, 9.0*(10 - dist_to_intersection), 0)
+      threshold_degree = tf.where(dist_to_intersection < 9, 9 * (9 - dist_to_intersection), 0)
+      angular_turn_ = discounted_return.discounted_return(angular_speed, length, 1.0)[:, 0]   # shape: (1000,)
+      # angular_turn_abs = discounted_return.discounted_return(-tf.abs(angular_speed), length, 1.0)[:, 0]
+      # angular_turn_relative = tf.reduce_sum(-tf.abs(angular_speed[...,1:]-angular_speed[...,:-1]),axis=-1)
+      heading_loss = - tf.abs(delta_degree(goal_heading_degree - (current_heading_degree + angular_turn_)))* \
+                     tf.case({ tf.equal(cmd_id,3):costn1, tf.equal(cmd_id,2):costn1, tf.equal(cmd_id,1):costn1}, default=costn0)
+      heading_loss_weighted = heading_loss * tf.where(heading_loss>threshold_degree-90, tf.ones((amount,))*0.3, tf.ones((amount,))*1000.0) # + 0.3*angular_turn_relative # + 0.1*angular_turn_abs
+      return_heading = tf.reshape(heading_loss_weighted, (original_batch, amount))
+
+      total_return = return_+ return_heading # /90.0*12*4
+
 
 
     # Re-fit belief to the best ones.

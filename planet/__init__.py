@@ -182,7 +182,7 @@ from __future__ import print_function
 # LOGDIR = '~/Data/planet/carla_64_400'
 
 #############################################
-#
+
 # TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
 # IMG_SIZE = (64, 64)
 # H_SIZE, S_SIZE = 400, 60
@@ -197,22 +197,36 @@ from __future__ import print_function
 
 
 ##########################################
-#
-TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
+
+# TASK_NAME="{tasks: [carla]}"; ENABLE_EXPERT=False; PLANNING=False
+# STATES = ['reward','angular_speed_degree','forward_speed','collided','intersection_offroad','intersection_otherlane']
+# IMG_SIZE = (128, 128)
+# H_SIZE, S_SIZE = 200, 30
+# EPISODE_LEN, COLLECT_EPISODE = 600, 300000.0
+# REPEATE, NUM_SEED = 1, 1
+# BATCHSIZE, CHUNK_LEN = 50, 50
+# REWARD_FUNC = 'custom3'
+# USE_SENSOR = 'use_rgb'
+# NUM_CHANNELS = 3
+# SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
+# LOGDIR = '~/Data/planet/carla128_all'
+
+
+TASK_NAME="{tasks: [carla]}"; ENABLE_EXPERT=False; PLANNING=True
 STATES = ['reward','angular_speed_degree','forward_speed','collided','intersection_offroad','intersection_otherlane']
 IMG_SIZE = (128, 128)
 H_SIZE, S_SIZE = 200, 30
 EPISODE_LEN, COLLECT_EPISODE = 600, 300000.0
 REPEATE, NUM_SEED = 1, 1
-BATCHSIZE, CHUNK_LEN = 50, 50
+BATCHSIZE, CHUNK_LEN = 30, 30
 REWARD_FUNC = 'custom3'
 USE_SENSOR = 'use_rgb'
 NUM_CHANNELS = 3
 SCENARIO = 'TOWN2_ONE_CURVE_STRAIGHT_NAV' # 'TOWN2_NPC'  #  'TOWN2_WEATHER_NPC'  #
-LOGDIR = '~/Data/planet/carla128_all'
+LOGDIR = '~/Data/planet/carla128_planning'
 
 
-# TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False
+# TASK_NAME = "{tasks: [carla]}"; ENABLE_EXPERT = False; PLANNING=False
 # STATES = ['reward','angular_speed_degree','forward_speed','collided','intersection_offroad','intersection_otherlane']
 # IMG_SIZE = (128, 128)
 # H_SIZE, S_SIZE = 200, 30

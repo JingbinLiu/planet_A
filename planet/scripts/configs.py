@@ -27,7 +27,7 @@ from planet import models
 from planet import networks
 from planet import tools
 from planet.scripts import tasks as tasks_lib
-from planet import BATCHSIZE, CHUNK_LEN, NUM_SEED, H_SIZE, S_SIZE
+from planet import BATCHSIZE, CHUNK_LEN, NUM_SEED, H_SIZE, S_SIZE, PLANNING
 
 # with config.unlocked:
 def default(config, params):   # config={}, params = {'tasks': ['breakout'], 'logdir': './log_testing/00001'}
@@ -128,19 +128,35 @@ def _loss_functions(config, params):
   config.overshooting_losses.reward = params.get(
       'overshooting_reward_scale', 100.0)
 
-  # loss weights for angular_speed_degree.
-  config.zero_step_losses.reward = 6.0
-  config.overshooting_losses.reward = 60.0
-  config.zero_step_losses.angular_speed_degree = 1.0
-  config.overshooting_losses.angular_speed_degree = 10.0
-  config.zero_step_losses.forward_speed = 1.0
-  config.overshooting_losses.forward_speed = 10.0
-  config.zero_step_losses.collided = 1.0
-  config.overshooting_losses.collided = 10.0
-  config.zero_step_losses.intersection_offroad = 1.0
-  config.overshooting_losses.intersection_offroad = 10.0
-  config.zero_step_losses.intersection_otherlane = 1.0
-  config.overshooting_losses.intersection_otherlane = 10.0
+  if not PLANNING:
+      # loss weights for angular_speed_degree.
+      config.zero_step_losses.reward = 6.0
+      config.overshooting_losses.reward = 60.0
+      config.zero_step_losses.angular_speed_degree = 1.0
+      config.overshooting_losses.angular_speed_degree = 10.0
+      config.zero_step_losses.forward_speed = 1.0
+      config.overshooting_losses.forward_speed = 10.0
+      config.zero_step_losses.collided = 1.0
+      config.overshooting_losses.collided = 10.0
+      config.zero_step_losses.intersection_offroad = 1.0
+      config.overshooting_losses.intersection_offroad = 10.0
+      config.zero_step_losses.intersection_otherlane = 1.0
+      config.overshooting_losses.intersection_otherlane = 10.0
+
+  if PLANNING:
+      # loss weights for angular_speed_degree.
+      config.zero_step_losses.reward = 1.0
+      config.overshooting_losses.reward = 10.0
+      config.zero_step_losses.angular_speed_degree = 2.0
+      config.overshooting_losses.angular_speed_degree = 20.0
+      config.zero_step_losses.forward_speed = 3.0
+      config.overshooting_losses.forward_speed = 30.0
+      config.zero_step_losses.collided = 2.0
+      config.overshooting_losses.collided = 20.0
+      config.zero_step_losses.intersection_offroad = 1.0
+      config.overshooting_losses.intersection_offroad = 10.0
+      config.zero_step_losses.intersection_otherlane = 1.0
+      config.overshooting_losses.intersection_otherlane = 10.0
 
 
   del config.overshooting_losses['image']
