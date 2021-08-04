@@ -27,6 +27,7 @@ import gym
 from planet import control
 from planet import networks
 from planet import tools
+import skimage.transform
 
 
 Task = collections.namedtuple(
@@ -151,8 +152,7 @@ class DeepMindWrapper_gym(object):
       raise ValueError("Only render mode 'rgb_array' is supported.")
     del args  # Unused
     del kwargs  # Unused
-    return self._env.physics.render(
-        *self._render_size, camera_id=self._camera_id)
+    return skimage.transform.resize(self._env.render('rgb_array'), (64,64))
 
 
 
@@ -166,5 +166,5 @@ def _dm_control_env_gym(action_repeat, max_length, env_name):
     env = control.wrappers.PixelObservations(env, (64, 64), np.uint8, 'image')
     env = control.wrappers.ConvertTo32Bit(env)
     return env
-  env = control.wrappers.ExternalProcess(env_ctor)
+  env = env_ctor()#control.wrappers.ExternalProcess(env_ctor)
   return env

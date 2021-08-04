@@ -281,7 +281,8 @@ class LimitDuration(object):
       done = True
       self._step = None
     else:
-      assert not done
+      #assert not done
+      print(self._step, done)
     return observ, reward, done, info
 
   def reset(self):

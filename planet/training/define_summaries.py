@@ -97,16 +97,16 @@ def define_summaries(graph, config):
 
   with tf.variable_scope('simulation'):
     sim_returns = []
-    for name, params in config.sim_summaries.items():
-      # These are expensive and equivalent for train and test phases, so only
-      # do one of them.
-      sim_summary, sim_return = tf.cond(
-          tf.equal(graph.phase, 'test'),
-          lambda: utility.simulate_episodes(config, params, graph, name),
-          lambda: ('', 0.0),
-          name='should_simulate_' + params.task.name)
-      summaries.append(sim_summary)
-      sim_returns.append(sim_return)
+    # for name, params in config.sim_summaries.items():
+    #   # These are expensive and equivalent for train and test phases, so only
+    #   # do one of them.
+    #   sim_summary, sim_return = tf.cond(
+    #       tf.equal(graph.phase, 'test'),
+    #       lambda: utility.simulate_episodes(config, params, graph, name),
+    #       lambda: ('', 0.0),
+    #       name='should_simulate_' + params.task.name)
+    #   summaries.append(sim_summary)
+    #   sim_returns.append(sim_return)
 
   summaries = tf.summary.merge(summaries)
   score = tf.reduce_mean(sim_returns)[None]

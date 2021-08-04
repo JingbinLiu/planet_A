@@ -58,7 +58,7 @@ def _data_processing(config, params):
   config.max_episodes = None
   config.scan_episodes_every = params.get('scan_episodes_every', 10)
   config.data_loader = params.get('data_loader', 'scan')
-  config.batch_shape = params.get('batch_shape', (50, 50))
+  config.batch_shape = params.get('batch_shape', (5, 5))
   config.num_chunks = params.get('num_chunks', 1)
   image_bits = params.get('image_bits', 5)
   config.preprocess_fn = functools.partial(
@@ -133,8 +133,8 @@ def _loss_functions(config, params):
 
 
 def _training_schedule(config, params):
-  config.train_steps = int(params.get('train_steps', 50000))
-  config.test_steps = int(params.get('test_steps', 100))
+  config.train_steps = int(params.get('train_steps', 500))
+  config.test_steps = int(params.get('test_steps', 10))
   config.max_steps = int(params.get('max_steps', 2e7))
   config.train_log_every = config.train_steps
   config.train_checkpoint_every = None

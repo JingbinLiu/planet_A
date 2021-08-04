@@ -118,21 +118,21 @@ def define_model(data, trainer, config):
   # Active data collection.
   collect_summaries = []
   graph = tools.AttrDict(locals())
-  with tf.variable_scope('collection'):
-    should_collects = []
-    for name, params in config.sim_collects.items():
-      after, every = params.steps_after, params.steps_every
-      should_collect = tf.logical_and(
-          tf.equal(phase, 'train'),
-          tools.schedule.binary(step, config.batch_shape[0], after, every))
-      collect_summary, _ = tf.cond(
-          should_collect,
-          functools.partial(
-              utility.simulate_episodes, config, params, graph, name),
-          lambda: (tf.constant(''), tf.constant(0.0)),
-          name='should_collect_' + params.task.name)
-      should_collects.append(should_collect)
-      collect_summaries.append(collect_summary)
+  # with tf.variable_scope('collection'):
+  #   should_collects = []
+  #   for name, params in config.sim_collects.items():
+  #     after, every = params.steps_after, params.steps_every
+  #     should_collect = tf.logical_and(
+  #         tf.equal(phase, 'train'),
+  #         tools.schedule.binary(step, config.batch_shape[0], after, every))
+  #     collect_summary, _ = tf.cond(
+  #         should_collect,
+  #         functools.partial(
+  #             utility.simulate_episodes, config, params, graph, name),
+  #         lambda: (tf.constant(''), tf.constant(0.0)),
+  #         name='should_collect_' + params.task.name)
+  #     should_collects.append(should_collect)
+  #     collect_summaries.append(collect_summary)
 
   # Compute summaries.
   graph = tools.AttrDict(locals())
