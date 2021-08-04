@@ -493,10 +493,15 @@ class ExternalProcess(object):
       action_space: The cached action space of the environment.
     """
     self._conn, conn = multiprocessing.Pipe()
+    print("=1"*20)
     self._process = multiprocessing.Process(
         target=self._worker, args=(constructor, conn))
+    print(constructor)
+    print("=2" * 20)
     atexit.register(self.close)
+    print("=3" * 20)
     self._process.start()
+    print("=4" * 20)
     self._observ_space = None
     self._action_space = None
 
@@ -615,7 +620,9 @@ class ExternalProcess(object):
       KeyError: When receiving a message of unknown type.
     """
     try:
+      print('=1')
       env = constructor()
+      print('=2')
       while True:
         try:
           # Only block for short times to have keyboard exceptions be raised.
