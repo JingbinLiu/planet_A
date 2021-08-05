@@ -30,16 +30,20 @@ setuptools.setup(
     license='Apache 2.0',
     url='http://github.com/google-research/planet',
     install_requires=[
-      'dm_control',
-      'gym',
-      'mujoco_py',
-      'ruamel.yaml',
-      'scikit-image',
-      'scipy',
-      'tensorflow-gpu',
-      'tensorflow_probability',
+#     'dm_control',
+     'gym[atari]',
+#     'mujoco_py',
+     'ruamel.yaml',
+     'scikit-image',
+     'scipy',
+     'tensorflow-gpu==1.12.0',
+     'tensorflow_probability==0.5.0',
+     'opencv-python',
+     'pygame',
     ],
-    packages=setuptools.find_packages(),
+    # install packages (planet) in the project planet_A.
+    # If not installed, use $ export PYTHONPATH=/home/liu/Projects/planet_A:$PYTHONPATH; CUDA_VISIBLE_DEVICES=0 python planet/scripts/train.py
+    # packages=setuptools.find_packages(),
     classifiers=[
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
@@ -48,5 +52,3 @@ setuptools.setup(
         'Intended Audience :: Science/Research',
     ],
 )
-
-
