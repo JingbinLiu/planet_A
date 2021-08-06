@@ -118,7 +118,7 @@ def pendulum(config, params):
   action_repeat = params.get('action_repeat', 2)
   max_length = 1000 // action_repeat
   state_components = [
-      'reward', 'state']
+      'reward', 'state', 'action']
   env_ctor = functools.partial(
       _dm_control_env_gym, action_repeat, max_length, 'Pendulum-v0')
   return Task('pendulum', env_ctor, max_length, state_components)

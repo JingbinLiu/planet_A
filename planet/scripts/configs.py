@@ -122,6 +122,7 @@ def _loss_functions(config, params):
   config.zero_step_losses.divergence = params.get('divergence_scale', 1.0)
   config.zero_step_losses.global_divergence = params.get('global_divergence_scale', 0.1)
   config.zero_step_losses.reward = params.get('reward_scale', 10.0)
+  config.zero_step_losses.action = params.get('action_scale', 1.0)
   config.overshooting = params.get('overshooting', config.batch_shape[1] - 1)
   config.overshooting_losses = config.zero_step_losses.copy(_unlocked=True)
   config.overshooting_losses.reward = params.get(
@@ -157,7 +158,7 @@ def _training_schedule(config, params):
 
 def _define_optimizers(config, params):
   optimizers = tools.AttrDict(_unlocked=True)
-  gradient_heads = params.get('gradient_heads', ['image', 'reward'])
+  gradient_heads = params.get('gradient_heads', ['image', 'reward', 'action'])
   assert all(head in config.heads for head in gradient_heads)
   diagnostics = r'.*/head_(?!{})[a-z]+/.*'.format('|'.join(gradient_heads))
   kwargs = dict(
