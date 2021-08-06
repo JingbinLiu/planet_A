@@ -125,6 +125,7 @@ def _loss_functions(config, params):
   config.zero_step_losses.action = params.get('action_scale', 1.0)
   config.overshooting = params.get('overshooting', config.batch_shape[1] - 1)
   config.overshooting_losses = config.zero_step_losses.copy(_unlocked=True)
+  config.overshooting_losses.pop('action')
   config.overshooting_losses.reward = params.get(
       'overshooting_reward_scale', 100.0)
   del config.overshooting_losses['image']
