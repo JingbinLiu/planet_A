@@ -200,6 +200,9 @@ def compute_losses(
           'stddev': tf.ones_like(prior['stddev'])}
       loss = cell.divergence_from_states(posterior, global_prior, mask)
       loss = tf.reduce_sum(loss, 1) / tf.reduce_sum(tf.to_float(mask), 1)
+    elif key == 'action':  # for imitatioin learning
+      output = heads[key](features)   # decoder is used.
+      loss = -tools.mask(output.log_prob(target[key]), mask)
     elif key in heads:
       output = heads[key](features)   # decoder is used.
       loss = -tools.mask(output.log_prob(target[key]), mask)

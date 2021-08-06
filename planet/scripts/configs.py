@@ -109,7 +109,10 @@ def _tasks(config, params):
       tasks[index] = tasks_lib.Task(
           task.name, env_ctor, task.max_length, ['reward'])
   for name in tasks[0].state_components:
-    config.heads[name] = networks.feed_forward
+    if name == 'action':
+      config.heads[name] = networks.feed_forward_discret_action
+    else:
+      config.heads[name] = networks.feed_forward
     config.zero_step_losses[name] = 1.0
   config.tasks = tasks
   return config
