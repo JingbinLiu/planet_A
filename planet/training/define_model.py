@@ -55,7 +55,7 @@ def define_model(data, trainer, config):
     heads[key] = tf.make_template(name, head, create_scope_now_=True, **kwargs)
 
   # Embed observations and unroll model.
-  embedded = encoder(obs)
+  embedded = encoder(obs)               # obs: dict{'state': , 'image': ,'action': ,'reward': ,}
   # Separate overshooting and zero step observations because computing
   # overshooting targets for images would be expensive.
   zero_step_obs = {}

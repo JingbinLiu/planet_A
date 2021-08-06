@@ -289,7 +289,7 @@ def collect_initial_episodes(config):
   for name, params in items:
     message = 'Collecting {}+ random episodes ({}).'  # e.g. Collecting 5+ random episodes (test-cheetah_run).
     tf.logging.info(message.format(params.num_episodes, name))
-    control.random_episodes(
-        params.task.env_ctor,
-        params.num_episodes,
-        params.save_episode_dir)
+    # control.random_episodes(
+    #     params.task.env_ctor,
+    #     params.num_episodes,
+    #     params.save_episode_dir)
