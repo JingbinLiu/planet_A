@@ -45,3 +45,8 @@ class MSEDistribution(object):
       event_dims = [-(x + 1) for x in range(self.event_shape).ndims]
       squared_error = tf.reduce_sum(squared_error, event_dims)
     return squared_error
+  def cross_entropy(self, event):
+
+    return tf.nn.softmax_cross_entropy_with_logits(logits = self._mean, labels = event)
+
+

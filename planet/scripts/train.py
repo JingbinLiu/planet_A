@@ -54,7 +54,7 @@ from planet import models
 from planet import tools
 from planet import training
 from planet.scripts import configs
-
+import time
 
 def start(logdir, args):
   with args.params.unlocked:
@@ -62,7 +62,8 @@ def start(logdir, args):
   config = tools.AttrDict()
   with config.unlocked:
     config = getattr(configs, args.config)(config, args.params)  # function args.config('default'/'debug') is defined in configs(configs.py). task is defined.
-  training.utility.collect_initial_episodes(config)
+
+  # training.utility.collect_initial_episodes(config)
   return config
 
 
@@ -112,7 +113,7 @@ if __name__ == '__main__':
   boolean = lambda x: bool(['False', 'True'].index(x))
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--logdir', default='.\log')
+      '--logdir', default='e:\py\planet_A\planet\scripts\log')
   parser.add_argument(
       '--num_runs', type=int, default=1)
   parser.add_argument(

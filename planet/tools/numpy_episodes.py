@@ -50,6 +50,7 @@ def numpy_episodes(
     dtypes, shapes = _read_spec(train_dir, **kwargs)
   except ZeroDivisionError:
     dtypes, shapes = _read_spec(test_dir, **kwargs)
+  
   loader = {
       'scan': functools.partial(_read_episodes_scan, every=scan_every),
       'reload': _read_episodes_reload,
@@ -158,7 +159,7 @@ def _read_episode(
     filename, resize=None, sub_sample=None, max_length=None,
     action_noise=None):
   with tf.gfile.Open(filename, 'rb') as file_:
-    episode = np.load(file_)
+    episode = np.load(file_, allow_pickle=True)
   episode = {key: _convert_type(episode[key]) for key in episode.keys()}
   for key in ('bias', 'discount'):
     if key in episode:

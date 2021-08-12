@@ -201,8 +201,10 @@ def compute_losses(
       loss = cell.divergence_from_states(posterior, global_prior, mask)
       loss = tf.reduce_sum(loss, 1) / tf.reduce_sum(tf.to_float(mask), 1)
     elif key == 'action':  # for imitatioin learning
-      output = heads[key](features)   # decoder is used.
-      loss = -tools.mask(output.log_prob(target[key]), mask)
+      output = heads[key](features,target["state"])   # decoder is used.
+      loss = output.cross_entropy(target[key])
+    elif key == 'state':
+      pass
     elif key in heads:
       output = heads[key](features)   # decoder is used.
       loss = -tools.mask(output.log_prob(target[key]), mask)

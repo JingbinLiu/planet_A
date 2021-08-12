@@ -64,27 +64,35 @@ def define_summaries(graph, config):
         graph.cell, prior, posterior, mask)
     with tf.variable_scope('prior'):
       prior_features = graph.cell.features_from_state(prior)
-      prior_dists = {
-          name: head(prior_features)
-          for name, head in heads.items()}
-      summaries += summary.log_prob_summaries(prior_dists, graph.obs, mask)
-      summaries += summary.image_summaries(
-          prior_dists['image'], config.postprocess_fn(graph.obs['image']))
+      prior_dists=dict()
+      for name,head in heads.items():
+        if name!='action':
+          prior_dists[name]=head(prior_features)
+        else:
+          prior_dists[name]=head(prior_features,graph.data["state"])
     with tf.variable_scope('posterior'):
       posterior_features = graph.cell.features_from_state(posterior)
-      posterior_dists = {
-          name: head(posterior_features)
-          for name, head in heads.items()}
-      summaries += summary.log_prob_summaries(posterior_dists, graph.obs, mask)
-      summaries += summary.image_summaries(
-          posterior_dists['image'], config.postprocess_fn(graph.obs['image']))
-
-  with tf.variable_scope('openloop'):
-    state = tools.unroll.open_loop(
+      posterior_dists = dict()
+      for name,head in heads.items():
+        if name!='action':
+          posterior_dists[name]=head(posterior_features)
+        else:
+          posterior_dists[name]=head(posterior_features,graph.data["state"])
+      # posterior_dists = {
+      #     name: head(posterior_features)
+      #     for name, head in heads.items()}
+      with tf.variable_scope('openloop'):
+        state = tools.unroll.open_loop(
         graph.cell, graph.embedded, graph.prev_action,
-        config.open_loop_context, config.debug)
+        config.open_loop_context, config.debug) 
     state_features = graph.cell.features_from_state(state)
-    state_dists = {name: head(state_features) for name, head in heads.items()}
+    state_dists = dict()
+    for name,head in heads.items():
+      if name!='action':
+          state_dists[name]=head(state_features)
+      else:
+          state_dists[name]=head(state_features,graph.data["state"])
+    # state_dists = {name: head(state_features) for name, head in heads.items()}
     summaries += summary.log_prob_summaries(state_dists, graph.obs, mask)
     summaries += summary.image_summaries(
         state_dists['image'], config.postprocess_fn(graph.obs['image']))
