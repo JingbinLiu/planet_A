@@ -38,15 +38,16 @@ def feed_forward(
   return dist
 
 def feed_forward_discret_action(
-    state, data_shape, num_layers=2, activation=None, cut_gradient=False):
+    state,state_vec, data_shape, num_layers=2, activation=None, cut_gradient=False):
   """Create a model returning unnormalized MSE distribution."""
-  hidden = state
+  hidden = tf.concat([state, state_vec], -1)
+  #hidden = state
   if cut_gradient:
     hidden = tf.stop_gradient(hidden)
   for _ in range(num_layers):
     hidden = tf.layers.dense(hidden, 100, tf.nn.relu)
-  mean = tf.layers.dense(hidden, int(np.prod(data_shape)), tf.nn.softmax)
+  mean = tf.layers.dense(hidden, int(np.prod(data_shape)))
   mean = tf.reshape(mean, tools.shape(state)[:-1] + data_shape)
   dist = tools.MSEDistribution(mean)
-  dist = tfd.Independent(dist, len(data_shape))
+  # sdist = tfd.Independent(dist, len(data_shape))
   return dist

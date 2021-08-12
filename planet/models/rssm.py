@@ -90,6 +90,7 @@ class RSSM(base.Base):
 
   def _transition(self, prev_state, prev_action, zero_obs):
     """Compute prior next state by applying the transition dynamics."""
+    prev_action = tf.cast(prev_action, dtype=tf.float32)
     inputs = tf.concat([prev_state['sample'], prev_action], -1)
     hidden = tf.layers.dense(inputs, **self._kwargs)
     belief, rnn_state = self._cell(hidden, prev_state['rnn_state'])
