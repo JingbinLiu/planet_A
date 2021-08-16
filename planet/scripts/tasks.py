@@ -152,7 +152,7 @@ class DeepMindWrapper_gym(object):
       raise ValueError("Only render mode 'rgb_array' is supported.")
     del args  # Unused
     del kwargs  # Unused
-    return skimage.transform.resize(self._env.render('rgb_array'), (64,64))
+    return np.ones(shape=(64,64,3),dtype=np.uint8)#skimage.transform.resize(self._env.render('rgb_array'), (64,64))
 
 
 

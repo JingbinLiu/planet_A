@@ -139,7 +139,7 @@ def _loss_functions(config, params):
 
 def _training_schedule(config, params):
   config.train_steps = int(params.get('train_steps', 500))
-  config.test_steps = int(params.get('test_steps', 10))
+  config.test_steps = int(params.get('test_steps', 100))
   config.max_steps = int(params.get('max_steps', 2e7))
   config.train_log_every = config.train_steps
   config.train_checkpoint_every = None
@@ -223,6 +223,8 @@ def _active_collection(config, params):
 def _define_simulation(task, config, params, horizon, batch_size):
   def objective(state, graph):
     return graph.heads['reward'](graph.cell.features_from_state(state)).mean()
+  def objective_action(state, graph):
+    return graph.heads['action'](graph.cell.features_from_state(state)).mean()
   planner = functools.partial(
       control.planning.cross_entropy_method,
       amount=params.get('cem_amount', 1000),
@@ -233,4 +235,5 @@ def _define_simulation(task, config, params, horizon, batch_size):
       task=task,
       batch_size=batch_size,
       planner=planner,
-      objective=objective)
+      objective=objective,
+      objective_action=objective_action)

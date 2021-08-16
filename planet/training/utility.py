@@ -241,6 +241,7 @@ def simulate_episodes(config, params, graph, name):
       encoder=graph.encoder,
       planner=params.planner,
       objective=functools.partial(params.objective, graph=graph),
+      objective_action=functools.partial(params.objective_action, graph=graph),
       exploration=params.exploration,
       preprocess_fn=config.preprocess_fn,
       postprocess_fn=config.postprocess_fn)
